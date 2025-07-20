@@ -65,6 +65,22 @@ export const exchanges: Exchange[] = [
     volume24h: 650000000,
     status: "online",
   },
+  {
+    id: "zebpay",
+    name: "ZebPay",
+    coordinates: [18.5204, 73.8567], // Pune
+    region: "Asia-Pacific",
+    volume24h: 420000000,
+    status: "online",
+  },
+  {
+    id: "bitbns",
+    name: "BitBNS",
+    coordinates: [12.9716, 77.5946], // Bangalore
+    region: "Asia-Pacific",
+    volume24h: 380000000,
+    status: "online",
+  },
 ];
 
 export const cloudRegions: CloudRegion[] = [

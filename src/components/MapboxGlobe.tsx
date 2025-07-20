@@ -373,6 +373,9 @@ const MapboxGlobe = () => {
               latency: data.latency,
               color,
               opacity: Math.max(0.3, 1 - data.latency / 500),
+              exchangeName: exchange.name,
+              regionName: `${region.provider} ${region.location}`,
+              packetLoss: data.packetLoss,
             },
             geometry: {
               type: "LineString",
@@ -409,7 +412,7 @@ const MapboxGlobe = () => {
         },
         paint: {
           "line-color": ["get", "color"],
-          "line-width": 3,
+          "line-width": 4,
           "line-opacity": ["get", "opacity"],
         },
       });
@@ -424,19 +427,38 @@ const MapboxGlobe = () => {
         const properties = feature.properties;
         
         if (properties) {
+          // Remove existing popup
+          if ((map.current as any)._connectionPopup) {
+            (map.current as any)._connectionPopup.remove();
+          }
+          
           const popup = new mapboxgl.Popup({ 
             closeButton: false,
             closeOnClick: false,
-            offset: 15 
+            offset: 15,
+            className: 'latency-popup'
           })
             .setLngLat(e.lngLat)
             .setHTML(`
               <div style="background: ${isDark ? '#1a1a1a' : '#ffffff'}; color: ${isDark ? 'white' : 'black'}; padding: 8px; border-radius: 6px; border: 1px solid ${isDark ? '#333' : '#ddd'}; font-size: 12px;">
-                <div style="color: ${properties.color}; font-weight: bold; margin-bottom: 4px;">
-                  Latency: ${properties.latency}ms
+                <div style="font-weight: bold; margin-bottom: 8px; color: ${isDark ? '#fff' : '#000'};">
+                  ${properties.exchangeName} → ${properties.regionName}
                 </div>
-                <div style="color: ${isDark ? '#ccc' : '#666'};">
-                  Quality: ${properties.latency < 50 ? 'Excellent' : properties.latency < 150 ? 'Good' : 'Poor'}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="color: ${isDark ? '#ccc' : '#666'};">Latency:</span>
+                  <span style="color: ${properties.color}; font-weight: bold;">${properties.latency}ms</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="color: ${isDark ? '#ccc' : '#666'};">Quality:</span>
+                  <span style="color: ${properties.latency < 50 ? '#00FF88' : properties.latency < 150 ? '#FFB800' : '#FF3366'};">
+                    ${properties.latency < 50 ? 'Excellent' : properties.latency < 150 ? 'Good' : 'Poor'}
+                  </span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: ${isDark ? '#ccc' : '#666'};">Packet Loss:</span>
+                  <span style="color: ${properties.packetLoss < 1 ? '#00FF88' : properties.packetLoss < 3 ? '#FFB800' : '#FF3366'};">
+                    ${properties.packetLoss.toFixed(1)}%
+                  </span>
                 </div>
               </div>
             `)

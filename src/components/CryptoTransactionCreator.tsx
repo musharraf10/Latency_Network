@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useStore } from "@/hooks/useStore";
 import { exchanges, cloudRegions } from "@/data/mockData";
 import { useTheme } from "@/hooks/useTheme";
+import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { 
   Plus, 
   MapPin, 
@@ -47,6 +48,8 @@ interface CryptoTransaction {
 
 const CryptoTransactionCreator = () => {
   const { isDark } = useTheme();
+  const { selectedExchange, selectedCloudRegion, setSelectedExchange, setSelectedCloudRegion } = useStore();
+  const { latencyData } = useRealTimeLatency();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<"select" | "name" | "confirm">("select");
   const [selectedPoints, setSelectedPoints] = useState<SelectedPoint[]>([]);
@@ -54,16 +57,62 @@ const CryptoTransactionCreator = () => {
   const [transactions, setTransactions] = useState<CryptoTransaction[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Auto-populate from globe selections
+  useEffect(() => {
+    const points: SelectedPoint[] = [];
+    
+    if (selectedExchange) {
+      const exchange = exchanges.find(e => e.id === selectedExchange);
+      if (exchange) {
+        points.push({
+          id: exchange.id,
+          name: exchange.name,
+          type: "exchange",
+          coordinates: exchange.coordinates,
+        });
+      }
+    }
+    
+    if (selectedCloudRegion) {
+      const region = cloudRegions.find(r => r.id === selectedCloudRegion);
+      if (region) {
+        points.push({
+          id: region.id,
+          name: `${region.provider} ${region.location}`,
+          type: "region",
+          coordinates: region.coordinates,
+          provider: region.provider,
+        });
+      }
+    }
+    
+    if (points.length > 0 && selectedPoints.length === 0) {
+      setSelectedPoints(points);
+      if (points.length === 2) {
+        setStep("name");
+      }
+    }
+  }, [selectedExchange, selectedCloudRegion, selectedPoints.length]);
+
   const resetDialog = useCallback(() => {
     setStep("select");
     setSelectedPoints([]);
     setCryptoName("");
     setIsCreating(false);
+    setSelectedExchange(null);
+    setSelectedCloudRegion(null);
   }, []);
 
   const handlePointSelect = (point: SelectedPoint) => {
     if (selectedPoints.length < 2) {
       setSelectedPoints(prev => [...prev, point]);
+      
+      // Update globe selections
+      if (point.type === "exchange") {
+        setSelectedExchange(point.id);
+      } else {
+        setSelectedCloudRegion(point.id);
+      }
       
       if (selectedPoints.length === 1) {
         setStep("name");
@@ -72,7 +121,17 @@ const CryptoTransactionCreator = () => {
   };
 
   const calculateEstimatedLatency = (from: SelectedPoint, to: SelectedPoint): number => {
-    // Simple distance-based latency calculation
+    // Try to get real latency data first
+    const realLatency = latencyData.find(data => 
+      (data.exchangeId === from.id && data.cloudRegionId === to.id) ||
+      (data.exchangeId === to.id && data.cloudRegionId === from.id)
+    );
+    
+    if (realLatency) {
+      return realLatency.latency;
+    }
+    
+    // Fallback to distance-based calculation
     const [lat1, lng1] = from.coordinates;
     const [lat2, lng2] = to.coordinates;
     
@@ -80,8 +139,7 @@ const CryptoTransactionCreator = () => {
       Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2)
     );
     
-    // Convert to approximate latency (simplified)
-    return Math.round(distance * 10 + Math.random() * 50 + 20);
+    return Math.round(distance * 8 + Math.random() * 30 + 15);
   };
 
   const handleCreateTransaction = async () => {
