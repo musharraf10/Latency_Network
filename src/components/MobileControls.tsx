@@ -413,7 +413,12 @@ const MobileControls = () => {
                         Export Data
                       </Button>
                       <div className="pt-2 border-t border-slate-700">
-                        <CryptoTransactionCreator />
+                        <div className="space-y-3">
+                          <h4 className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+                            Add Crypto Route
+                          </h4>
+                          <CryptoTransactionCreator />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -437,15 +442,15 @@ const MobileControls = () => {
           }`}
         >
           <div
-            className={`flex justify-between items-center text-xs font-medium ${
-              isDark ? "text-white" : "text-slate-900"
+            className={`flex justify-between items-center text-xs font-medium transition-colors ${
+              isDark ? "text-white" : "text-slate-800"
             }`}
           >
             <div className="text-center">
               <div className="font-bold text-sm">{statistics.avgLatency}ms</div>
               <div
-                className={`text-xs ${
-                  isDark ? "text-slate-400" : "text-slate-500"
+                className={`text-xs transition-colors ${
+                  isDark ? "text-slate-400" : "text-slate-600"
                 }`}
               >
                 Avg
@@ -456,8 +461,8 @@ const MobileControls = () => {
                 {statistics.activeConnections}
               </div>
               <div
-                className={`text-xs ${
-                  isDark ? "text-slate-400" : "text-slate-500"
+                className={`text-xs transition-colors ${
+                  isDark ? "text-slate-400" : "text-slate-600"
                 }`}
               >
                 Active
@@ -468,8 +473,8 @@ const MobileControls = () => {
                 {statistics.avgPacketLoss}%
               </div>
               <div
-                className={`text-xs ${
-                  isDark ? "text-slate-400" : "text-slate-500"
+                className={`text-xs transition-colors ${
+                  isDark ? "text-slate-400" : "text-slate-600"
                 }`}
               >
                 Loss
@@ -484,8 +489,8 @@ const MobileControls = () => {
                 {isConnected ? "●" : "○"}
               </div>
               <div
-                className={`text-xs ${
-                  isDark ? "text-slate-400" : "text-slate-500"
+                className={`text-xs transition-colors ${
+                  isDark ? "text-slate-400" : "text-slate-600"
                 }`}
               >
                 Status

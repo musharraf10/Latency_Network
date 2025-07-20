@@ -602,15 +602,26 @@ const MapboxGlobe = () => {
         map.current.getCanvas().style.cursor = "pointer";
 
         // Convert lngLat to screen coordinates
-        const point = map.current.project(e.lngLat);
+        const point = map.current.project(e.lngLat!);
         setTooltipData({
           exchangeName: properties.exchangeName,
           regionName: properties.regionName,
           latency: properties.latency,
           packetLoss: properties.packetLoss,
-          x: point.x,
-          y: point.y - 50, // Offset above cursor
+          x: point.x + 10,
+          y: point.y - 60, // Offset above cursor
         });
+      });
+
+      map.current.on("mousemove", "latency-connections", (e) => {
+        if (!map.current || !tooltipData) return;
+        
+        const point = map.current.project(e.lngLat!);
+        setTooltipData(prev => prev ? {
+          ...prev,
+          x: point.x + 10,
+          y: point.y - 60,
+        } : null);
       });
 
       map.current.on("mouseleave", "latency-connections", () => {
@@ -806,60 +817,39 @@ const MapboxGlobe = () => {
             top: tooltipData.y,
             zIndex: 10000,
             pointerEvents: "none",
+            transform: "translate(-50%, 0)",
           }}
         >
-          <Tooltip
-            isAnimationActive={false}
-            contentStyle={{
-              backgroundColor: isDark ? "#1E293B" : "#ffffff",
-              border: `1px solid ${isDark ? "#475569" : "#e2e8f0"}`,
-              borderRadius: "8px",
-              color: isDark ? "#F8FAFC" : "#1e293b",
-              padding: "8px",
-              fontSize: "12px",
-              maxWidth: "250px",
-              fontFamily: "Arial, sans-serif",
-            }}
-            formatter={(value: number, name: string) => [
-              `${value}${name === "latency" ? "ms" : "%"}`,
-              name === "latency" ? "Latency" : "Packet Loss",
-            ]}
-            labelFormatter={() =>
-              `${tooltipData.exchangeName} → ${tooltipData.regionName}`
-            }
-            payload={[
-              {
-                name: "latency",
-                value:
-                  tooltipData.latency != null
-                    ? Number(tooltipData.latency.toFixed(0))
-                    : undefined,
-                color:
-                  tooltipData.latency != null
-                    ? tooltipData.latency < 50
-                      ? "#00FF88"
-                      : tooltipData.latency < 150
-                      ? "#FFB800"
-                      : "#FF3366"
-                    : "#666",
-              },
-              {
-                name: "packetLoss",
-                value:
-                  tooltipData.packetLoss != null
-                    ? Number(tooltipData.packetLoss.toFixed(1))
-                    : undefined,
-                color:
-                  tooltipData.packetLoss != null
-                    ? tooltipData.packetLoss < 1
-                      ? "#00FF88"
-                      : tooltipData.packetLoss < 3
-                      ? "#FFB800"
-                      : "#FF3366"
-                    : "#666",
-              },
-            ]}
-          />
+          <div
+            className={`px-3 py-2 rounded-lg shadow-lg border text-xs font-medium ${
+              isDark 
+                ? "bg-slate-800 border-slate-600 text-white" 
+                : "bg-white border-slate-300 text-slate-900"
+            }`}
+            style={{ minWidth: "200px" }}
+          >
+            <div className="font-semibold mb-1 text-center">
+              {tooltipData.exchangeName} → {tooltipData.regionName}
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Latency:</span>
+              <span className={
+                tooltipData.latency < 50 ? "text-green-400" :
+                tooltipData.latency < 150 ? "text-yellow-400" : "text-red-400"
+              }>
+                {tooltipData.latency}ms
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Packet Loss:</span>
+              <span className={
+                tooltipData.packetLoss < 1 ? "text-green-400" :
+                tooltipData.packetLoss < 3 ? "text-yellow-400" : "text-red-400"
+              }>
+                {tooltipData.packetLoss.toFixed(1)}%
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

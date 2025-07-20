@@ -29,7 +29,7 @@ const ControlPanel = () => {
     selectedExchange,
   } = useStore();
 
-  const { latencyData, refreshData, toggleRealTime, isLoading } =
+  const { latencyData, refreshData, toggleRealTime, pauseRealTime, isPaused, isLoading } =
     useRealTimeLatency();
 
   const handleExchangeToggle = (exchangeId: string) => {
@@ -157,6 +157,22 @@ const ControlPanel = () => {
                 checked={realTimeEnabled}
                 onCheckedChange={handleRealTimeToggle}
               />
+            </div>
+
+            {/* Pause/Resume Toggle */}
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                {isPaused ? "Resume Updates" : "Pause Updates"}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={pauseRealTime}
+                disabled={!realTimeEnabled}
+                className="h-8"
+              >
+                {isPaused ? "Resume" : "Pause"}
+              </Button>
             </div>
 
             {/* Heatmap Toggle */}
