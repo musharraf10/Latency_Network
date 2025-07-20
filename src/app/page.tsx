@@ -90,22 +90,22 @@ export default function Home() {
       </AnimatePresence>
       {/* Header */}
       <motion.div 
-        className="absolute top-4 right-4 z-10"
+        className="absolute top-4 right-4 z-10 max-w-[calc(100vw-5rem)] md:max-w-none"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <div className={`backdrop-blur-md rounded-lg px-4 py-2 border transition-colors ${
+        <div className={`backdrop-blur-md rounded-lg px-3 md:px-4 py-2 border transition-colors ${
           isDark 
             ? "bg-black/40 border-slate-700/50 text-white" 
             : "bg-white/40 border-slate-300/50 text-slate-900"
         }`}>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
             <div>
-              <h1 className="font-bold text-lg">
+              <h1 className="font-bold text-sm md:text-lg">
             Latency Topology Visualizer
           </h1>
-              <p className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+              <p className={`text-xs md:text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
             Real-time network latency between crypto exchanges and cloud regions
           </p>
             </div>
@@ -130,50 +130,50 @@ export default function Home() {
 
       {/* Legend */}
       <motion.div 
-        className="absolute bottom-4 right-4 z-10 hidden md:block"
+        className="absolute bottom-4 right-4 z-10 hidden lg:block max-w-xs"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
       >
-        <div className={`backdrop-blur-md rounded-lg p-4 border transition-colors ${
+        <div className={`backdrop-blur-md rounded-lg p-3 border transition-colors shadow-lg ${
           isDark 
             ? "bg-black/40 border-slate-700/50 text-white" 
-            : "bg-white/40 border-slate-300/50 text-slate-900"
+            : "bg-white/90 border-slate-300/50 text-slate-900"
         }`}>
-          <h3 className="font-semibold mb-3">Latency Legend</h3>
+          <h3 className="font-semibold mb-2 text-sm">Latency Legend</h3>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-400"></div>
-              <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+              <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                 &lt; 50ms - Excellent
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-              <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>50-150ms - Good</span>
+              <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>50-150ms - Good</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-400"></div>
-              <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>> 150ms - Poor</span>
+              <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>> 150ms - Poor</span>
             </div>
           </div>
 
-          <div className={`mt-4 pt-3 border-t ${isDark ? "border-slate-700" : "border-slate-300"}`}>
-            <h4 className="font-medium mb-2">Markers</h4>
+          <div className={`mt-3 pt-2 border-t ${isDark ? "border-slate-700" : "border-slate-400"}`}>
+            <h4 className="font-medium mb-2 text-sm">Markers</h4>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>Crypto Exchanges</span>
+                <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>Crypto Exchanges</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-400"></div>
-                <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>Cloud Regions</span>
+                <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>Cloud Regions</span>
               </div>
             </div>
           </div>
 
-          <div className={`mt-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-slate-300"}`}>
-            <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+          <div className={`mt-2 pt-2 border-t ${isDark ? "border-slate-700" : "border-slate-400"}`}>
+            <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
               <div>Real-time API integration</div>
               <div>Live network monitoring</div>
             </div>

@@ -63,19 +63,19 @@ const MapboxGlobe = () => {
 
       if (isDark) {
         map.current.setFog({
-          color: "rgb(186, 210, 235)",
-          "high-color": "rgb(36, 92, 223)",
+          color: "rgb(100, 120, 150)",
+          "high-color": "rgb(20, 40, 80)",
           "horizon-blend": 0.02,
-          "space-color": "rgb(11, 11, 25)",
-          "star-intensity": 0.6,
+          "space-color": "rgb(5, 10, 20)",
+          "star-intensity": 0.8,
         });
       } else {
         map.current.setFog({
-          color: "rgb(220, 230, 245)",
-          "high-color": "rgb(100, 150, 255)",
+          color: "rgb(200, 220, 240)",
+          "high-color": "rgb(80, 120, 200)",
           "horizon-blend": 0.02,
-          "space-color": "rgb(240, 245, 255)",
-          "star-intensity": 0.2,
+          "space-color": "rgb(230, 240, 255)",
+          "star-intensity": 0.3,
         });
       }
 
@@ -137,19 +137,19 @@ const MapboxGlobe = () => {
 
       if (isDark) {
         map.current.setFog({
-          color: "rgb(186, 210, 235)",
-          "high-color": "rgb(36, 92, 223)",
+          color: "rgb(100, 120, 150)",
+          "high-color": "rgb(20, 40, 80)",
           "horizon-blend": 0.02,
-          "space-color": "rgb(11, 11, 25)",
-          "star-intensity": 0.6,
+          "space-color": "rgb(5, 10, 20)",
+          "star-intensity": 0.8,
         });
       } else {
         map.current.setFog({
-          color: "rgb(220, 230, 245)",
-          "high-color": "rgb(100, 150, 255)",
+          color: "rgb(200, 220, 240)",
+          "high-color": "rgb(80, 120, 200)",
           "horizon-blend": 0.02,
-          "space-color": "rgb(240, 245, 255)",
-          "star-intensity": 0.2,
+          "space-color": "rgb(230, 240, 255)",
+          "star-intensity": 0.3,
         });
       }
     });
@@ -409,9 +409,54 @@ const MapboxGlobe = () => {
         },
         paint: {
           "line-color": ["get", "color"],
-          "line-width": 2,
+          "line-width": 3,
           "line-opacity": ["get", "opacity"],
         },
+      });
+
+      // Add hover interaction for connection lines
+      map.current.on("mouseenter", "latency-connections", (e) => {
+        if (!map.current || !e.features || !e.features[0]) return;
+        
+        map.current.getCanvas().style.cursor = "pointer";
+        
+        const feature = e.features[0];
+        const properties = feature.properties;
+        
+        if (properties) {
+          const popup = new mapboxgl.Popup({ 
+            closeButton: false,
+            closeOnClick: false,
+            offset: 15 
+          })
+            .setLngLat(e.lngLat)
+            .setHTML(`
+              <div style="background: ${isDark ? '#1a1a1a' : '#ffffff'}; color: ${isDark ? 'white' : 'black'}; padding: 8px; border-radius: 6px; border: 1px solid ${isDark ? '#333' : '#ddd'}; font-size: 12px;">
+                <div style="color: ${properties.color}; font-weight: bold; margin-bottom: 4px;">
+                  Latency: ${properties.latency}ms
+                </div>
+                <div style="color: ${isDark ? '#ccc' : '#666'};">
+                  Quality: ${properties.latency < 50 ? 'Excellent' : properties.latency < 150 ? 'Good' : 'Poor'}
+                </div>
+              </div>
+            `)
+            .addTo(map.current);
+          
+          // Store popup reference to remove it later
+          (map.current as any)._connectionPopup = popup;
+        }
+      });
+
+      map.current.on("mouseleave", "latency-connections", () => {
+        if (!map.current) return;
+        
+        map.current.getCanvas().style.cursor = "";
+        
+        // Remove the popup
+        if ((map.current as any)._connectionPopup) {
+          (map.current as any)._connectionPopup.remove();
+          (map.current as any)._connectionPopup = null;
+        }
       });
     }
   }, [isLoaded, latencyData, filters, realTimeEnabled]);

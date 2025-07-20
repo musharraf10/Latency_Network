@@ -13,6 +13,7 @@ import { useTheme } from "@/hooks/useTheme";
 import NetworkStatus from "./NetworkStatus";
 import SearchPanel from "./SearchPanel";
 import ExportDialog from "./ExportDialog";
+import CryptoTransactionCreator from "./CryptoTransactionCreator";
 
 const ControlPanel = () => {
   const { isDark } = useTheme();
@@ -204,6 +205,8 @@ const ControlPanel = () => {
             </Button>
 
             <ExportDialog />
+
+            <CryptoTransactionCreator />
           </CardContent>
         </Card>
     </div>

@@ -41,7 +41,7 @@ const MobileControls = () => {
           variant="outline"
           size="icon"
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-black/40 backdrop-blur-md border-slate-700/50 text-white hover:bg-black/60"
+          className="bg-black/40 backdrop-blur-md border-slate-700/50 text-white hover:bg-black/60 shadow-lg"
         >
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
