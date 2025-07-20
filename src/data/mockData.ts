@@ -1,4 +1,29 @@
-import type { Exchange, CloudRegion, LatencyData } from "@/types";
+import type {
+  Exchange,
+  CloudRegion,
+  LatencyData,
+  HistoricalData,
+} from "@/types";
+
+// Haversine formula
+const getDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+};
 
 export const exchanges: Exchange[] = [
   {
@@ -50,19 +75,27 @@ export const exchanges: Exchange[] = [
     status: "online",
   },
   {
-    id: "wazirx",
-    name: "WazirX",
-    coordinates: [19.076, 72.8777], // Mumbai
-    region: "Asia-Pacific",
-    volume24h: 890000000,
+    id: "coindcx",
+    name: "CoinDCX",
+    coordinates: [28.7041, 77.1025], // Delhi
+    region: "India",
+    volume24h: 650000000,
     status: "online",
   },
   {
-    id: "coindcx",
-    name: "CoinDCX",
-    coordinates: [28.6139, 77.209], // Delhi
-    region: "Asia-Pacific",
-    volume24h: 650000000,
+    id: "zebpay",
+    name: "ZebPay",
+    coordinates: [18.5204, 73.8567], // Pune
+    region: "India",
+    volume24h: 420000000,
+    status: "online",
+  },
+  {
+    id: "bitbns",
+    name: "BitBNS",
+    coordinates: [12.9716, 77.5946], // Bangalore
+    region: "India",
+    volume24h: 380000000,
     status: "online",
   },
 ];
@@ -78,15 +111,6 @@ export const cloudRegions: CloudRegion[] = [
     zones: ["a", "b", "c", "d", "e", "f"],
   },
   {
-    id: "aws-ap-south-1",
-    provider: "AWS",
-    regionCode: "ap-south-1",
-    location: "Mumbai",
-    coordinates: [19.076, 72.8777],
-    zones: ["a", "b", "c"],
-  },
-
-  {
     id: "aws-us-west-2",
     provider: "AWS",
     regionCode: "us-west-2",
@@ -100,7 +124,7 @@ export const cloudRegions: CloudRegion[] = [
     regionCode: "eu-west-1",
     location: "Ireland",
     coordinates: [53.3498, -6.2603],
-    zones: ["a", "b", "c", "z"],
+    zones: ["a", "b", "c"],
   },
   {
     id: "aws-ap-southeast-1",
@@ -108,6 +132,14 @@ export const cloudRegions: CloudRegion[] = [
     regionCode: "ap-southeast-1",
     location: "Singapore",
     coordinates: [1.3521, 103.8198],
+    zones: ["a", "b", "c"],
+  },
+  {
+    id: "aws-ap-south-1",
+    provider: "AWS",
+    regionCode: "ap-south-1",
+    location: "Mumbai",
+    coordinates: [19.076, 72.8777],
     zones: ["a", "b", "c"],
   },
   // GCP Regions
@@ -135,6 +167,14 @@ export const cloudRegions: CloudRegion[] = [
     coordinates: [1.3521, 103.8198],
     zones: ["a", "b", "c"],
   },
+  {
+    id: "gcp-asia-south1",
+    provider: "GCP",
+    regionCode: "asia-south1",
+    location: "Mumbai",
+    coordinates: [19.076, 72.8777], // Corrected to Mumbai
+    zones: ["a", "b", "c"],
+  },
   // Azure Regions
   {
     id: "azure-eastus",
@@ -160,42 +200,41 @@ export const cloudRegions: CloudRegion[] = [
     coordinates: [1.3521, 103.8198],
     zones: ["1", "2", "3"],
   },
-
-  {
-    id: "gcp-asia-south1",
-    provider: "GCP",
-    regionCode: "asia-south1",
-    location: "Mumbai",
-    coordinates: [19.076, 72.8777],
-    zones: ["a", "b", "c"],
-  },
   {
     id: "azure-centralindia",
     provider: "Azure",
     regionCode: "centralindia",
     location: "Pune",
     coordinates: [18.5204, 73.8567],
-    zones: ["1", "2", "3"],
+    zones: ["a", "b", "c"],
   },
 ];
 
-// Generate mock latency data
+// Generate mock latency data with distance-based latency
 export const generateMockLatencyData = (): LatencyData[] => {
   const data: LatencyData[] = [];
 
   exchanges.forEach((exchange) => {
     cloudRegions.forEach((region) => {
-      // Calculate base latency based on distance
-      const baseLatency = Math.random() * 200 + 20;
-      const variation = (Math.random() - 0.5) * 40;
-      const latency = Math.max(1, baseLatency + variation);
+      // Calculate distance between exchange and cloud region
+      const distance = getDistance(
+        exchange.coordinates[0],
+        exchange.coordinates[1],
+        region.coordinates[0],
+        region.coordinates[1]
+      );
+      // Base latency: 0.1ms per km (approximate for fiber-optic networks)
+      const baseLatency = distance * 0.1;
+      // Add variation for network conditions
+      const variation = (Math.random() - 0.5) * 20;
+      const latency = Math.max(1, Math.round(baseLatency + variation));
 
       data.push({
         exchangeId: exchange.id,
         cloudRegionId: region.id,
-        latency: Math.round(latency),
+        latency,
         timestamp: Date.now(),
-        packetLoss: Math.random() * 2,
+        packetLoss: Math.random() * (distance > 1000 ? 2 : 1), // Higher packet loss for longer distances
       });
     });
   });
@@ -203,20 +242,41 @@ export const generateMockLatencyData = (): LatencyData[] => {
   return data;
 };
 
-export const generateHistoricalData = (hours: number = 24) => {
-  const data = [];
+// Generate historical data for a specific exchange-cloud pair
+export const generateHistoricalData = (
+  hours: number = 24,
+  exchangeId?: string,
+  cloudRegionId?: string
+): HistoricalData[] => {
+  const data: HistoricalData[] = [];
   const now = Date.now();
   const interval = (hours * 60 * 60 * 1000) / 100; // 100 data points
 
+  // Use specific exchange and cloud region if provided, else use first pair
+  const exchange = exchanges.find((e) => e.id === exchangeId) || exchanges[0];
+  const region =
+    cloudRegions.find((r) => r.id === cloudRegionId) || cloudRegions[0];
+
+  // Calculate base latency based on distance
+  const distance = getDistance(
+    exchange.coordinates[0],
+    exchange.coordinates[1],
+    region.coordinates[0],
+    region.coordinates[1]
+  );
+  const baseLatency = distance * 0.1;
+
   for (let i = 0; i < 100; i++) {
     const timestamp = now - (99 - i) * interval;
-    const baseLatency = 50 + Math.sin(i * 0.1) * 20;
-    const noise = (Math.random() - 0.5) * 10;
+    const variation = (Math.random() - 0.5) * 10;
+    const latency = Math.max(1, Math.round(baseLatency + variation));
 
     data.push({
+      exchangeId: exchange.id,
+      cloudRegionId: region.id,
+      latency,
       timestamp,
-      latency: Math.max(1, Math.round(baseLatency + noise)),
-      packetLoss: Math.random() * 1,
+      packetLoss: Math.random() * (distance > 1000 ? 1 : 0.5),
     });
   }
 

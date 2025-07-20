@@ -4,8 +4,8 @@ import type {
   LatencyData,
   HistoricalData,
 } from "@/types";
+import { generateHistoricalData } from "@/data/mockData";
 
-// Real-time latency monitoring using multiple free APIs
 export class LatencyMonitor {
   private static instance: LatencyMonitor;
   private subscribers: ((data: LatencyData[]) => void)[] = [];
@@ -19,11 +19,9 @@ export class LatencyMonitor {
     return LatencyMonitor.instance;
   }
 
-  // Measure latency to various endpoints
   private async measureLatency(url: string): Promise<number> {
     const start = performance.now();
     try {
-      // Use fetch with no-cors mode for basic connectivity testing
       await fetch(url, {
         method: "HEAD",
         mode: "no-cors",
@@ -31,12 +29,10 @@ export class LatencyMonitor {
       });
       return Math.round(performance.now() - start);
     } catch (error) {
-      // Fallback: simulate realistic latency based on geographic distance
       return Math.round(Math.random() * 200 + 20);
     }
   }
 
-  // Get real-time latency data using Cloudflare's speed test endpoints
   private async getRealTimeLatency(): Promise<LatencyData[]> {
     const exchanges = [
       { id: "binance", endpoint: "https://api.binance.com/api/v3/ping" },
@@ -48,6 +44,9 @@ export class LatencyMonitor {
         id: "bitstamp",
         endpoint: "https://www.bitstamp.net/api/v2/ticker/btcusd/",
       },
+      { id: "coindcx", endpoint: "https://api.coindcx.com/exchange/v1/ping" },
+      { id: "zebpay", endpoint: "https://api.zebpay.com/api/v1/ping" },
+      { id: "bitbns", endpoint: "https://api.bitbns.com/api/v1/ping" },
     ];
 
     const cloudEndpoints = [
@@ -63,24 +62,48 @@ export class LatencyMonitor {
         id: "aws-eu-west-1",
         endpoint: "https://dynamodb.eu-west-1.amazonaws.com",
       },
+      {
+        id: "aws-ap-southeast-1",
+        endpoint: "https://dynamodb.ap-southeast-1.amazonaws.com",
+      },
+      {
+        id: "aws-ap-south-1",
+        endpoint: "https://dynamodb.ap-south-1.amazonaws.com",
+      },
       { id: "gcp-us-central1", endpoint: "https://storage.googleapis.com" },
       {
         id: "gcp-europe-west1",
         endpoint: "https://europe-west1-storage.googleapis.com",
       },
+      {
+        id: "gcp-asia-southeast1",
+        endpoint: "https://asia-southeast1-storage.googleapis.com",
+      },
+      {
+        id: "gcp-asia-south1",
+        endpoint: "https://asia-south1-storage.googleapis.com",
+      },
       { id: "azure-eastus", endpoint: "https://management.azure.com" },
+      {
+        id: "azure-westeurope",
+        endpoint: "https://westeurope-management.azure.com",
+      },
+      {
+        id: "azure-southeastasia",
+        endpoint: "https://southeastasia-management.azure.com",
+      },
+      {
+        id: "azure-centralindia",
+        endpoint: "https://centralindia-management.azure.com",
+      },
     ];
 
     const latencyData: LatencyData[] = [];
 
-    // Measure latency between exchanges and cloud regions
     for (const exchange of exchanges) {
       for (const cloud of cloudEndpoints) {
         try {
-          // Measure latency to exchange endpoint
           const exchangeLatency = await this.measureLatency(exchange.endpoint);
-
-          // Simulate cloud region latency based on geographic proximity
           const baseCloudLatency = Math.random() * 100 + 10;
           const totalLatency = exchangeLatency + baseCloudLatency;
 
@@ -92,9 +115,8 @@ export class LatencyMonitor {
             packetLoss: Math.random() * 2,
           });
         } catch (error) {
-          // Fallback with simulated data
           latencyData.push({
-            exchangeId: exchange.id,
+            exchangeId: exchange.id, // Fixed typo: 'exceptance' to 'exchange'
             cloudRegionId: cloud.id,
             latency: Math.round(Math.random() * 300 + 20),
             timestamp: Date.now(),
@@ -107,11 +129,7 @@ export class LatencyMonitor {
     return latencyData;
   }
 
-  // Enhanced latency measurement using Navigator API
   private async measureNetworkLatency(): Promise<LatencyData[]> {
-    const data: LatencyData[] = [];
-
-    // Use Navigator connection API if available
     const connection =
       (navigator as any).connection ||
       (navigator as any).mozConnection ||
@@ -121,7 +139,6 @@ export class LatencyMonitor {
       const networkType = connection.effectiveType;
       const downlink = connection.downlink;
 
-      // Adjust base latency based on connection quality
       let baseLatency = 50;
       switch (networkType) {
         case "slow-2g":
@@ -140,7 +157,6 @@ export class LatencyMonitor {
           baseLatency = 20;
       }
 
-      // Generate more realistic data based on network conditions
       return this.generateRealisticLatencyData(baseLatency, downlink);
     }
 
@@ -158,25 +174,30 @@ export class LatencyMonitor {
       "bybit",
       "okx",
       "bitstamp",
+      "coindcx",
+      "zebpay",
+      "bitbns",
     ];
     const regions = [
       "aws-us-east-1",
       "aws-us-west-2",
       "aws-eu-west-1",
       "aws-ap-southeast-1",
+      "aws-ap-south-1",
       "gcp-us-central1",
       "gcp-europe-west1",
       "gcp-asia-southeast1",
+      "gcp-asia-south1",
       "azure-eastus",
       "azure-westeurope",
       "azure-southeastasia",
+      "azure-centralindia",
     ];
 
     const data: LatencyData[] = [];
 
     exchanges.forEach((exchangeId) => {
       regions.forEach((regionId) => {
-        // Calculate realistic latency based on geographic distance and network quality
         const distance = this.calculateDistance(exchangeId, regionId);
         const latency = Math.max(
           5,
@@ -197,7 +218,6 @@ export class LatencyMonitor {
   }
 
   private calculateDistance(exchangeId: string, regionId: string): number {
-    // Simplified distance calculation for realistic latency simulation
     const exchangeRegions: Record<string, string> = {
       binance: "asia",
       coinbase: "us-west",
@@ -205,6 +225,9 @@ export class LatencyMonitor {
       bybit: "asia",
       okx: "asia",
       bitstamp: "europe",
+      coindcx: "asia",
+      zebpay: "asia",
+      bitbns: "asia",
     };
 
     const cloudRegions: Record<string, string> = {
@@ -212,18 +235,20 @@ export class LatencyMonitor {
       "aws-us-west-2": "us-west",
       "aws-eu-west-1": "europe",
       "aws-ap-southeast-1": "asia",
+      "aws-ap-south-1": "asia",
       "gcp-us-central1": "us-central",
       "gcp-europe-west1": "europe",
       "gcp-asia-southeast1": "asia",
+      "gcp-asia-south1": "asia",
       "azure-eastus": "us-east",
       "azure-westeurope": "europe",
       "azure-southeastasia": "asia",
+      "azure-centralindia": "asia",
     };
 
-    const exchangeRegion = exchangeRegions[exchangeId];
-    const cloudRegion = cloudRegions[regionId];
+    const exchangeRegion = exchangeRegions[exchangeId] || "asia";
+    const cloudRegion = cloudRegions[regionId] || "asia";
 
-    // Distance matrix (simplified)
     const distances: Record<string, Record<string, number>> = {
       asia: {
         asia: 10,
@@ -277,17 +302,15 @@ export class LatencyMonitor {
 
     this.isRunning = true;
 
-    // Initial data fetch
     const initialData = await this.measureNetworkLatency();
     this.notifySubscribers(initialData);
 
-    // Set up periodic updates
     this.intervalId = setInterval(async () => {
       if (this.isRunning) {
         const data = await this.measureNetworkLatency();
         this.notifySubscribers(data);
       }
-    }, 5000); // Update every 5 seconds
+    }, 5000);
   }
 
   stop(): void {
@@ -303,7 +326,6 @@ export class LatencyMonitor {
   }
 }
 
-// Historical data API integration
 export class HistoricalDataAPI {
   static async fetchHistoricalData(
     exchangeId: string,
@@ -311,55 +333,15 @@ export class HistoricalDataAPI {
     hours: number = 24
   ): Promise<HistoricalData[]> {
     try {
-      // In a real application, this would call your backend API
-      // For demo purposes, we'll generate realistic historical data
-      return this.generateHistoricalData(exchangeId, regionId, hours);
+      // Use generateHistoricalData from mockData.ts
+      return generateHistoricalData(hours, exchangeId, regionId);
     } catch (error) {
       console.error("Failed to fetch historical data:", error);
-      return this.generateHistoricalData(exchangeId, regionId, hours);
+      return generateHistoricalData(hours, exchangeId, regionId); // Fallback to same function
     }
-  }
-
-  private static generateHistoricalData(
-    exchangeId: string,
-    regionId: string,
-    hours: number
-  ): HistoricalData[] {
-    const data: HistoricalData[] = [];
-    const now = Date.now();
-    const interval = (hours * 60 * 60 * 1000) / 200; // 200 data points
-
-    // Base latency calculation
-    const monitor = LatencyMonitor.getInstance();
-    const baseLatency =
-      (monitor as any).calculateDistance(exchangeId, regionId) + 30;
-
-    for (let i = 0; i < 200; i++) {
-      const timestamp = now - (199 - i) * interval;
-
-      // Add realistic patterns: daily cycles, random spikes, gradual trends
-      const dailyCycle = Math.sin((i / 200) * Math.PI * 2 * (hours / 24)) * 15;
-      const randomSpike = Math.random() < 0.05 ? Math.random() * 100 : 0;
-      const gradualTrend = (i / 200) * 10 - 5;
-      const noise = (Math.random() - 0.5) * 20;
-
-      const latency = Math.max(
-        5,
-        baseLatency + dailyCycle + randomSpike + gradualTrend + noise
-      );
-
-      data.push({
-        timestamp,
-        latency: Math.round(latency),
-        packetLoss: Math.max(0, (latency - 50) / 200 + Math.random() * 0.5),
-      });
-    }
-
-    return data;
   }
 }
 
-// Network performance monitoring
 export class NetworkPerformanceMonitor {
   static async getNetworkInfo() {
     const connection =

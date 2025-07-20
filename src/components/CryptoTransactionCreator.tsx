@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
@@ -17,14 +17,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useStore } from "@/hooks/useStore";
 import { exchanges, cloudRegions } from "@/data/mockData";
 import { useTheme } from "@/hooks/useTheme";
-import { 
-  Plus, 
-  MapPin, 
-  ArrowRight, 
-  Zap, 
+import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
+import {
+  Plus,
+  MapPin,
+  ArrowRight,
+  Zap,
   CheckCircle,
   AlertCircle,
-  Coins
+  Coins,
 } from "lucide-react";
 
 interface SelectedPoint {
@@ -47,6 +48,13 @@ interface CryptoTransaction {
 
 const CryptoTransactionCreator = () => {
   const { isDark } = useTheme();
+  const {
+    selectedExchange,
+    selectedCloudRegion,
+    setSelectedExchange,
+    setSelectedCloudRegion,
+  } = useStore();
+  const { latencyData } = useRealTimeLatency();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<"select" | "name" | "confirm">("select");
   const [selectedPoints, setSelectedPoints] = useState<SelectedPoint[]>([]);
@@ -54,34 +62,93 @@ const CryptoTransactionCreator = () => {
   const [transactions, setTransactions] = useState<CryptoTransaction[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Auto-populate from globe selections
+  useEffect(() => {
+    const points: SelectedPoint[] = [];
+
+    if (selectedExchange) {
+      const exchange = exchanges.find((e) => e.id === selectedExchange);
+      if (exchange) {
+        points.push({
+          id: exchange.id,
+          name: exchange.name,
+          type: "exchange",
+          coordinates: exchange.coordinates,
+        });
+      }
+    }
+
+    if (selectedCloudRegion) {
+      const region = cloudRegions.find((r) => r.id === selectedCloudRegion);
+      if (region) {
+        points.push({
+          id: region.id,
+          name: `${region.provider} ${region.location}`,
+          type: "region",
+          coordinates: region.coordinates,
+          provider: region.provider,
+        });
+      }
+    }
+
+    if (points.length > 0 && selectedPoints.length === 0) {
+      setSelectedPoints(points);
+      if (points.length === 2) {
+        setStep("name");
+      }
+    }
+  }, [selectedExchange, selectedCloudRegion, selectedPoints.length]);
+
   const resetDialog = useCallback(() => {
     setStep("select");
     setSelectedPoints([]);
     setCryptoName("");
     setIsCreating(false);
+    setSelectedExchange(null);
+    setSelectedCloudRegion(null);
   }, []);
 
   const handlePointSelect = (point: SelectedPoint) => {
     if (selectedPoints.length < 2) {
-      setSelectedPoints(prev => [...prev, point]);
-      
+      setSelectedPoints((prev) => [...prev, point]);
+
+      // Update globe selections
+      if (point.type === "exchange") {
+        setSelectedExchange(point.id);
+      } else {
+        setSelectedCloudRegion(point.id);
+      }
+
       if (selectedPoints.length === 1) {
         setStep("name");
       }
     }
   };
 
-  const calculateEstimatedLatency = (from: SelectedPoint, to: SelectedPoint): number => {
-    // Simple distance-based latency calculation
+  const calculateEstimatedLatency = (
+    from: SelectedPoint,
+    to: SelectedPoint
+  ): number => {
+    // Try to get real latency data first
+    const realLatency = latencyData.find(
+      (data) =>
+        (data.exchangeId === from.id && data.cloudRegionId === to.id) ||
+        (data.exchangeId === to.id && data.cloudRegionId === from.id)
+    );
+
+    if (realLatency) {
+      return realLatency.latency;
+    }
+
+    // Fallback to distance-based calculation
     const [lat1, lng1] = from.coordinates;
     const [lat2, lng2] = to.coordinates;
-    
+
     const distance = Math.sqrt(
       Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2)
     );
-    
-    // Convert to approximate latency (simplified)
-    return Math.round(distance * 10 + Math.random() * 50 + 20);
+
+    return Math.round(distance * 8 + Math.random() * 30 + 15);
   };
 
   const handleCreateTransaction = async () => {
@@ -90,19 +157,22 @@ const CryptoTransactionCreator = () => {
     setIsCreating(true);
 
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const newTransaction: CryptoTransaction = {
       id: `tx-${Date.now()}`,
       name: cryptoName.trim(),
       fromPoint: selectedPoints[0],
       toPoint: selectedPoints[1],
-      estimatedLatency: calculateEstimatedLatency(selectedPoints[0], selectedPoints[1]),
+      estimatedLatency: calculateEstimatedLatency(
+        selectedPoints[0],
+        selectedPoints[1]
+      ),
       status: "active",
       createdAt: new Date(),
     };
 
-    setTransactions(prev => [...prev, newTransaction]);
+    setTransactions((prev) => [...prev, newTransaction]);
     setStep("confirm");
     setIsCreating(false);
   };
@@ -113,13 +183,13 @@ const CryptoTransactionCreator = () => {
   };
 
   const availablePoints: SelectedPoint[] = [
-    ...exchanges.map(exchange => ({
+    ...exchanges.map((exchange) => ({
       id: exchange.id,
       name: exchange.name,
       type: "exchange" as const,
       coordinates: exchange.coordinates,
     })),
-    ...cloudRegions.map(region => ({
+    ...cloudRegions.map((region) => ({
       id: region.id,
       name: `${region.provider} ${region.location}`,
       type: "region" as const,
@@ -137,10 +207,14 @@ const CryptoTransactionCreator = () => {
 
   const getProviderColor = (provider?: string) => {
     switch (provider) {
-      case "AWS": return "bg-orange-500";
-      case "GCP": return "bg-blue-500";
-      case "Azure": return "bg-cyan-400";
-      default: return "bg-green-500";
+      case "AWS":
+        return "bg-orange-500";
+      case "GCP":
+        return "bg-blue-500";
+      case "Azure":
+        return "bg-cyan-400";
+      default:
+        return "bg-green-500";
     }
   };
 
@@ -148,9 +222,9 @@ const CryptoTransactionCreator = () => {
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="flex items-center gap-2"
             onClick={() => setIsOpen(true)}
           >
@@ -158,15 +232,19 @@ const CryptoTransactionCreator = () => {
             Add Crypto Route
           </Button>
         </DialogTrigger>
-        <DialogContent className={`max-w-2xl transition-colors ${
-          isDark 
-            ? "bg-slate-900 border-slate-700" 
-            : "bg-white border-slate-300"
-        }`}>
+        <DialogContent
+          className={`max-w-2xl transition-colors ${
+            isDark
+              ? "bg-slate-900 border-slate-700"
+              : "bg-white border-slate-300"
+          }`}
+        >
           <DialogHeader>
-            <DialogTitle className={`flex items-center gap-2 ${
-              isDark ? "text-white" : "text-slate-900"
-            }`}>
+            <DialogTitle
+              className={`flex items-center gap-2 ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               <Coins className="w-5 h-5 text-green-400" />
               Create Crypto Transaction Route
             </DialogTitle>
@@ -182,41 +260,65 @@ const CryptoTransactionCreator = () => {
                 className="space-y-4"
               >
                 <div className="text-center">
-                  <h3 className={`font-medium mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+                  <h3
+                    className={`font-medium mb-2 ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     Select Two Points for Your Route
                   </h3>
-                  <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                  <p
+                    className={`text-sm ${
+                      isDark ? "text-slate-400" : "text-slate-600"
+                    }`}
+                  >
                     Choose a source and destination for your crypto transaction
                   </p>
                 </div>
 
                 {/* Selected Points Display */}
                 {selectedPoints.length > 0 && (
-                  <Card className={`transition-colors ${
-                    isDark ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200"
-                  }`}>
+                  <Card
+                    className={`transition-colors ${
+                      isDark
+                        ? "bg-slate-800 border-slate-700"
+                        : "bg-slate-50 border-slate-200"
+                    }`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-center gap-4">
                         <div className="text-center">
                           <div className="flex items-center justify-center mb-2">
                             {getPointIcon(selectedPoints[0])}
                           </div>
-                          <div className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+                          <div
+                            className={`font-medium text-sm ${
+                              isDark ? "text-white" : "text-slate-900"
+                            }`}
+                          >
                             {selectedPoints[0].name}
                           </div>
                           <Badge variant="outline" className="text-xs mt-1">
                             {selectedPoints[0].type}
                           </Badge>
                         </div>
-                        
+
                         {selectedPoints.length === 2 && (
                           <>
-                            <ArrowRight className={`w-6 h-6 ${isDark ? "text-slate-400" : "text-slate-600"}`} />
+                            <ArrowRight
+                              className={`w-6 h-6 ${
+                                isDark ? "text-slate-400" : "text-slate-600"
+                              }`}
+                            />
                             <div className="text-center">
                               <div className="flex items-center justify-center mb-2">
                                 {getPointIcon(selectedPoints[1])}
                               </div>
-                              <div className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+                              <div
+                                className={`font-medium text-sm ${
+                                  isDark ? "text-white" : "text-slate-900"
+                                }`}
+                              >
                                 {selectedPoints[1].name}
                               </div>
                               <Badge variant="outline" className="text-xs mt-1">
@@ -233,42 +335,59 @@ const CryptoTransactionCreator = () => {
                 {/* Available Points */}
                 <div className="max-h-80 overflow-y-auto space-y-2">
                   {availablePoints
-                    .filter(point => !selectedPoints.some(sp => sp.id === point.id))
+                    .filter(
+                      (point) =>
+                        !selectedPoints.some((sp) => sp.id === point.id)
+                    )
                     .map((point) => (
-                    <Button
-                      key={point.id}
-                      variant="ghost"
-                      className={`w-full justify-start p-3 h-auto transition-colors ${
-                        isDark 
-                          ? "bg-slate-800/50 hover:bg-slate-700/50" 
-                          : "bg-slate-100/50 hover:bg-slate-200/50"
-                      }`}
-                      onClick={() => handlePointSelect(point)}
-                      disabled={selectedPoints.length >= 2}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-3">
-                          {getPointIcon(point)}
-                          <div className="text-left">
-                            <div className={`font-medium ${isDark ? "text-white" : "text-slate-900"}`}>
-                              {point.name}
-                            </div>
-                            <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                              {point.type === "exchange" ? "Crypto Exchange" : "Cloud Region"}
+                      <Button
+                        key={point.id}
+                        variant="ghost"
+                        className={`w-full justify-start p-3 h-auto transition-colors ${
+                          isDark
+                            ? "bg-slate-800/50 hover:bg-slate-700/50"
+                            : "bg-slate-100/50 hover:bg-slate-200/50"
+                        }`}
+                        onClick={() => handlePointSelect(point)}
+                        disabled={selectedPoints.length >= 2}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            {getPointIcon(point)}
+                            <div className="text-left">
+                              <div
+                                className={`font-medium ${
+                                  isDark ? "text-white" : "text-slate-900"
+                                }`}
+                              >
+                                {point.name}
+                              </div>
+                              <div
+                                className={`text-xs ${
+                                  isDark ? "text-slate-400" : "text-slate-600"
+                                }`}
+                              >
+                                {point.type === "exchange"
+                                  ? "Crypto Exchange"
+                                  : "Cloud Region"}
+                              </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-2">
+                            {point.provider && (
+                              <div
+                                className={`w-3 h-3 rounded-full ${getProviderColor(
+                                  point.provider
+                                )}`}
+                              />
+                            )}
+                            <Badge variant="outline" className="text-xs">
+                              {point.type}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {point.provider && (
-                            <div className={`w-3 h-3 rounded-full ${getProviderColor(point.provider)}`} />
-                          )}
-                          <Badge variant="outline" className="text-xs">
-                            {point.type}
-                          </Badge>
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
+                      </Button>
+                    ))}
                 </div>
               </motion.div>
             )}
@@ -283,44 +402,73 @@ const CryptoTransactionCreator = () => {
               >
                 <div className="text-center">
                   <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                  <h3 className={`font-medium mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+                  <h3
+                    className={`font-medium mb-2 ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     Route Selected Successfully
                   </h3>
-                  <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                  <p
+                    className={`text-sm ${
+                      isDark ? "text-slate-400" : "text-slate-600"
+                    }`}
+                  >
                     Now enter the cryptocurrency name for this transaction route
                   </p>
                 </div>
 
                 {/* Route Summary */}
-                <Card className={`transition-colors ${
-                  isDark ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200"
-                }`}>
+                <Card
+                  className={`transition-colors ${
+                    isDark
+                      ? "bg-slate-800 border-slate-700"
+                      : "bg-slate-50 border-slate-200"
+                  }`}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-center gap-4">
                       <div className="text-center">
                         <div className="flex items-center justify-center mb-2">
                           {getPointIcon(selectedPoints[0])}
                         </div>
-                        <div className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+                        <div
+                          className={`font-medium text-sm ${
+                            isDark ? "text-white" : "text-slate-900"
+                          }`}
+                        >
                           {selectedPoints[0].name}
                         </div>
                       </div>
-                      
-                      <ArrowRight className={`w-6 h-6 ${isDark ? "text-slate-400" : "text-slate-600"}`} />
-                      
+
+                      <ArrowRight
+                        className={`w-6 h-6 ${
+                          isDark ? "text-slate-400" : "text-slate-600"
+                        }`}
+                      />
+
                       <div className="text-center">
                         <div className="flex items-center justify-center mb-2">
                           {getPointIcon(selectedPoints[1])}
                         </div>
-                        <div className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+                        <div
+                          className={`font-medium text-sm ${
+                            isDark ? "text-white" : "text-slate-900"
+                          }`}
+                        >
                           {selectedPoints[1].name}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-4 text-center">
                       <Badge variant="outline" className="text-xs">
-                        Estimated Latency: {calculateEstimatedLatency(selectedPoints[0], selectedPoints[1])}ms
+                        Estimated Latency:{" "}
+                        {calculateEstimatedLatency(
+                          selectedPoints[0],
+                          selectedPoints[1]
+                        )}
+                        ms
                       </Badge>
                     </div>
                   </CardContent>
@@ -328,7 +476,10 @@ const CryptoTransactionCreator = () => {
 
                 {/* Crypto Name Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="crypto-name" className={isDark ? "text-white" : "text-slate-900"}>
+                  <Label
+                    htmlFor="crypto-name"
+                    className={isDark ? "text-white" : "text-slate-900"}
+                  >
                     Cryptocurrency Name
                   </Label>
                   <Input
@@ -337,8 +488,8 @@ const CryptoTransactionCreator = () => {
                     value={cryptoName}
                     onChange={(e) => setCryptoName(e.target.value)}
                     className={`transition-colors ${
-                      isDark 
-                        ? "bg-slate-800 border-slate-600 text-white" 
+                      isDark
+                        ? "bg-slate-800 border-slate-600 text-white"
                         : "bg-white border-slate-300 text-slate-900"
                     }`}
                   />
@@ -383,36 +534,61 @@ const CryptoTransactionCreator = () => {
               >
                 <div>
                   <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                  <h3 className={`font-bold text-lg mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+                  <h3
+                    className={`font-bold text-lg mb-2 ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     Route Created Successfully!
                   </h3>
-                  <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                    Your crypto transaction route has been added to the visualization
+                  <p
+                    className={`text-sm ${
+                      isDark ? "text-slate-400" : "text-slate-600"
+                    }`}
+                  >
+                    Your crypto transaction route has been added to the
+                    visualization
                   </p>
                 </div>
 
-                <Card className={`transition-colors ${
-                  isDark ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200"
-                }`}>
+                <Card
+                  className={`transition-colors ${
+                    isDark
+                      ? "bg-slate-800 border-slate-700"
+                      : "bg-slate-50 border-slate-200"
+                  }`}
+                >
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div className="flex items-center justify-center gap-2">
                         <Coins className="w-5 h-5 text-green-400" />
-                        <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                        <span
+                          className={`font-bold ${
+                            isDark ? "text-white" : "text-slate-900"
+                          }`}
+                        >
                           {cryptoName}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center justify-center gap-4">
-                        <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                        <span
+                          className={`text-sm ${
+                            isDark ? "text-slate-300" : "text-slate-700"
+                          }`}
+                        >
                           {selectedPoints[0].name}
                         </span>
                         <ArrowRight className="w-4 h-4 text-green-400" />
-                        <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                        <span
+                          className={`text-sm ${
+                            isDark ? "text-slate-300" : "text-slate-700"
+                          }`}
+                        >
                           {selectedPoints[1].name}
                         </span>
                       </div>
-                      
+
                       <Badge variant="default" className="text-xs">
                         Active Route
                       </Badge>
@@ -432,19 +608,32 @@ const CryptoTransactionCreator = () => {
       {/* Active Transactions Display */}
       {transactions.length > 0 && (
         <div className="mt-4">
-          <h4 className={`font-medium mb-2 text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+          <h4
+            className={`font-medium mb-2 text-sm ${
+              isDark ? "text-white" : "text-slate-900"
+            }`}
+          >
             Active Crypto Routes ({transactions.length})
           </h4>
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {transactions.map((transaction) => (
-              <Card key={transaction.id} className={`transition-colors ${
-                isDark ? "bg-slate-800/50 border-slate-700" : "bg-slate-100/50 border-slate-200"
-              }`}>
+              <Card
+                key={transaction.id}
+                className={`transition-colors ${
+                  isDark
+                    ? "bg-slate-800/50 border-slate-700"
+                    : "bg-slate-100/50 border-slate-200"
+                }`}
+              >
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Coins className="w-4 h-4 text-green-400" />
-                      <span className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+                      <span
+                        className={`font-medium text-sm ${
+                          isDark ? "text-white" : "text-slate-900"
+                        }`}
+                      >
                         {transaction.name}
                       </span>
                     </div>
@@ -452,7 +641,11 @@ const CryptoTransactionCreator = () => {
                       {transaction.estimatedLatency}ms
                     </Badge>
                   </div>
-                  <div className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                  <div
+                    className={`text-xs mt-1 ${
+                      isDark ? "text-slate-400" : "text-slate-600"
+                    }`}
+                  >
                     {transaction.fromPoint.name} → {transaction.toPoint.name}
                   </div>
                 </CardContent>

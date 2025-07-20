@@ -1,11 +1,13 @@
+// src/components/MapboxGlobe.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { exchanges, cloudRegions } from "@/data/mockData";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "next-themes";
+import { Tooltip } from "recharts";
 import type { Feature, Geometry } from "geojson";
 
 // Set Mapbox access token
@@ -17,6 +19,9 @@ interface ConnectionProperties {
   latency: number;
   color: string;
   opacity: number;
+  exchangeName: string;
+  regionName: string;
+  packetLoss: number;
 }
 
 interface HeatmapProperties {
@@ -24,11 +29,21 @@ interface HeatmapProperties {
 }
 
 const MapboxGlobe = () => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const animationFrameId = useRef<number | null>(null);
+  const [tooltipData, setTooltipData] = useState<{
+    exchangeName: string;
+    regionName: string;
+    latency: number | null;
+    packetLoss: number | null;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const {
     selectedExchange,
@@ -42,9 +57,21 @@ const MapboxGlobe = () => {
 
   const { latencyData } = useRealTimeLatency();
 
+  // Memoize filters to prevent unnecessary changes
+  const memoizedFilters = useMemo(
+    () => ({
+      exchanges: filters.exchanges,
+      cloudProviders: filters.cloudProviders,
+      latencyRange: filters.latencyRange,
+    }),
+    [filters.exchanges, filters.cloudProviders, filters.latencyRange]
+  );
+
   // Initialize Mapbox map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+
+    console.log("Initializing map, isDark:", isDark);
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -58,9 +85,13 @@ const MapboxGlobe = () => {
       bearing: 0,
     });
 
-    // Add atmosphere and space styling
     map.current.on("style.load", () => {
       if (!map.current) return;
+
+      console.log(
+        "Initial style loaded, isStyleLoaded:",
+        map.current.isStyleLoaded()
+      );
 
       if (isDark) {
         map.current.setFog({
@@ -83,7 +114,6 @@ const MapboxGlobe = () => {
       setIsLoaded(true);
     });
 
-    // Auto-rotate the globe
     let userInteracting = false;
     let spinEnabled = true;
 
@@ -92,12 +122,11 @@ const MapboxGlobe = () => {
 
       const center = map.current.getCenter();
       center.lng -= 0.2;
-      map.current.easeTo({ center, duration: 1000 });
+      map.current.easeTo({ center, duration: 500 });
     };
 
-    const spinInterval = setInterval(spinGlobe, 1000);
+    const spinInterval = setInterval(spinGlobe, 500);
 
-    // Pause spinning on user interaction
     map.current.on("mousedown", () => {
       userInteracting = true;
     });
@@ -128,8 +157,16 @@ const MapboxGlobe = () => {
 
   // Update map style when theme changes
   useEffect(() => {
-    if (!map.current || !isLoaded) return;
+    if (!map.current || resolvedTheme === undefined) return;
 
+    console.log(
+      "Theme useEffect triggered, isDark:",
+      isDark,
+      "resolvedTheme:",
+      resolvedTheme
+    );
+
+    setIsLoaded(false);
     const newStyle = isDark
       ? "mapbox://styles/mapbox/dark-v11"
       : "mapbox://styles/mapbox/light-v11";
@@ -137,6 +174,11 @@ const MapboxGlobe = () => {
 
     map.current.once("style.load", () => {
       if (!map.current) return;
+
+      console.log(
+        "Theme style loaded, isStyleLoaded:",
+        map.current.isStyleLoaded()
+      );
 
       if (isDark) {
         map.current.setFog({
@@ -155,30 +197,32 @@ const MapboxGlobe = () => {
           "star-intensity": 0.3,
         });
       }
+
+      setIsLoaded(true);
     });
-  }, [isDark, isLoaded]);
+  }, [isDark, resolvedTheme]);
+
   // Add exchange markers
   useEffect(() => {
-    if (!map.current || !isLoaded) return;
+    if (!map.current || !isLoaded || !map.current.isStyleLoaded()) return;
 
-    // Clear existing exchange markers
+    console.log("Exchange markers useEffect triggered, isLoaded:", isLoaded);
+
     Object.values(markersRef.current).forEach((marker) => {
       if (marker.getElement().classList.contains("exchange-marker")) {
         marker.remove();
       }
     });
 
-    // Filter exchanges based on current filters
     const filteredExchanges = exchanges.filter(
       (exchange) =>
-        filters.exchanges.length === 0 ||
-        filters.exchanges.includes(exchange.id)
+        memoizedFilters.exchanges.length === 0 ||
+        memoizedFilters.exchanges.includes(exchange.id)
     );
 
     filteredExchanges.forEach((exchange) => {
       const isSelected = selectedExchange === exchange.id;
 
-      // Create custom marker element
       const el = document.createElement("div");
       el.className = "exchange-marker";
       el.style.cssText = `
@@ -195,7 +239,6 @@ const MapboxGlobe = () => {
         animation: pulse 2s infinite;
       `;
 
-      // Add hover effects
       el.addEventListener("mouseenter", () => {
         el.style.transform = "scale(1.5)";
         el.style.boxShadow = `0 0 25px ${isSelected ? "#FFB800" : "#00FF88"}80`;
@@ -208,17 +251,14 @@ const MapboxGlobe = () => {
         }40`;
       });
 
-      // Create marker
       const marker = new mapboxgl.Marker(el)
         .setLngLat([exchange.coordinates[1], exchange.coordinates[0]])
         .addTo(map.current!);
 
-      // Add click handler
       el.addEventListener("click", () => {
         setSelectedExchange(exchange.id);
       });
 
-      // Create popup
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
           <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
         isDark ? "white" : "black"
@@ -245,22 +285,27 @@ const MapboxGlobe = () => {
       marker.setPopup(popup);
       markersRef.current[`exchange-${exchange.id}`] = marker;
     });
-  }, [isLoaded, filters.exchanges, selectedExchange, setSelectedExchange]);
+  }, [
+    isLoaded,
+    memoizedFilters.exchanges,
+    selectedExchange,
+    setSelectedExchange,
+  ]);
 
   // Add cloud region markers
   useEffect(() => {
-    if (!map.current || !isLoaded) return;
+    if (!map.current || !isLoaded || !map.current.isStyleLoaded()) return;
 
-    // Clear existing cloud region markers
+    console.log("Cloud markers useEffect triggered, isLoaded:", isLoaded);
+
     Object.values(markersRef.current).forEach((marker) => {
       if (marker.getElement().classList.contains("cloud-marker")) {
         marker.remove();
       }
     });
 
-    // Filter cloud regions based on current filters
     const filteredRegions = cloudRegions.filter((region) =>
-      filters.cloudProviders.includes(region.provider)
+      memoizedFilters.cloudProviders.includes(region.provider)
     );
 
     const providerColors = {
@@ -273,7 +318,6 @@ const MapboxGlobe = () => {
       const isSelected = selectedCloudRegion === region.id;
       const color = providerColors[region.provider];
 
-      // Create custom marker element
       const el = document.createElement("div");
       el.className = "cloud-marker";
       el.style.cssText = `
@@ -287,7 +331,6 @@ const MapboxGlobe = () => {
         box-shadow: 0 0 ${isSelected ? "15px" : "8px"} ${color}40;
       `;
 
-      // Add hover effects
       el.addEventListener("mouseenter", () => {
         el.style.transform = "scale(1.4)";
         el.style.boxShadow = `0 0 20px ${color}80`;
@@ -298,17 +341,14 @@ const MapboxGlobe = () => {
         el.style.boxShadow = `0 0 ${isSelected ? "15px" : "8px"} ${color}40`;
       });
 
-      // Create marker
       const marker = new mapboxgl.Marker(el)
         .setLngLat([region.coordinates[1], region.coordinates[0]])
         .addTo(map.current!);
 
-      // Add click handler
       el.addEventListener("click", () => {
         setSelectedCloudRegion(region.id);
       });
 
-      // Create popup
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
           <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
         isDark ? "white" : "black"
@@ -332,170 +372,309 @@ const MapboxGlobe = () => {
     });
   }, [
     isLoaded,
-    filters.cloudProviders,
+    memoizedFilters.cloudProviders,
     selectedCloudRegion,
     setSelectedCloudRegion,
     isDark,
   ]);
 
-  // Add latency connections
+  // Add latency connections with animation and Tooltip
   useEffect(() => {
     if (!map.current || !isLoaded || !realTimeEnabled) return;
 
-    // Remove existing connection layers
-    if (map.current.getLayer("latency-connections")) {
-      map.current.removeLayer("latency-connections");
-    }
-    if (map.current.getSource("latency-connections")) {
-      map.current.removeSource("latency-connections");
-    }
-
-    // Filter latency data based on current filters
-    const filteredLatencyData = latencyData.filter((data) => {
-      const exchange = exchanges.find((e) => e.id === data.exchangeId);
-      const region = cloudRegions.find((r) => r.id === data.cloudRegionId);
-
-      return (
-        exchange &&
-        region &&
-        (filters.exchanges.length === 0 ||
-          filters.exchanges.includes(exchange.id)) &&
-        filters.cloudProviders.includes(region.provider) &&
-        data.latency >= filters.latencyRange[0] &&
-        data.latency <= filters.latencyRange[1]
-      );
+    console.log("Latency useEffect triggered, dependencies:", {
+      isLoaded,
+      latencyData: JSON.stringify(latencyData, null, 2),
+      memoizedFilters: JSON.stringify(memoizedFilters, null, 2),
+      realTimeEnabled,
+      isDark,
     });
 
-    // Create GeoJSON for connections
-    const connectionFeatures: Feature<Geometry, ConnectionProperties>[] =
-      filteredLatencyData
-        .map((data) => {
-          const exchange = exchanges.find((e) => e.id === data.exchangeId);
-          const region = cloudRegions.find((r) => r.id === data.cloudRegionId);
+    const addLatencyLayers = () => {
+      if (!map.current || !map.current.isStyleLoaded()) {
+        console.warn("Style not loaded, deferring addLatencyLayers");
+        return;
+      }
 
-          if (!exchange || !region) return null;
+      console.log(
+        "Adding latency layers, isStyleLoaded:",
+        map.current.isStyleLoaded()
+      );
 
-          // Determine color based on latency
-          let color = "#00FF88"; // Green
-          if (data.latency >= 150) color = "#FF3366"; // Red
-          else if (data.latency >= 50) color = "#FFB800"; // Yellow
+      // Remove existing connection layers and source if they exist
+      const layers = ["latency-connections", "latency-connections-glow"];
+      layers.forEach((layer) => {
+        if (map.current!.getLayer(layer)) {
+          map.current!.removeLayer(layer);
+        }
+      });
+      if (map.current.getSource("latency-connections")) {
+        map.current.removeSource("latency-connections");
+      }
 
-          return {
-            type: "Feature",
-            properties: {
-              latency: data.latency,
-              color,
-              opacity: Math.max(0.3, 1 - data.latency / 500),
-            },
-            geometry: {
-              type: "LineString",
-              coordinates: [
-                [exchange.coordinates[1], exchange.coordinates[0]],
-                [region.coordinates[1], region.coordinates[0]],
-              ],
-            },
-          } as Feature<Geometry, ConnectionProperties>;
-        })
-        .filter(
-          (feature): feature is Feature<Geometry, ConnectionProperties> =>
-            feature !== null
+      // Log all exchange and cloud region IDs for debugging
+      console.log(
+        "Available exchange IDs:",
+        exchanges.map((e) => e.id)
+      );
+      console.log(
+        "Available cloud region IDs:",
+        cloudRegions.map((r) => r.id)
+      );
+
+      // Filter latency data with strict validation
+      const filteredLatencyData = latencyData.filter((data) => {
+        const exchange = exchanges.find((e) => e.id === data.exchangeId);
+        const region = cloudRegions.find((r) => r.id === data.cloudRegionId);
+
+        if (!exchange || !region) {
+          console.warn(
+            `Invalid latency data: exchangeId=${data.exchangeId}, cloudRegionId=${data.cloudRegionId}, latency=${data.latency}, packetLoss=${data.packetLoss}`
+          );
+          return false;
+        }
+
+        const passesFilter =
+          (memoizedFilters.exchanges.length === 0 ||
+            memoizedFilters.exchanges.includes(exchange.id)) &&
+          memoizedFilters.cloudProviders.includes(region.provider) &&
+          data.latency >= memoizedFilters.latencyRange[0] &&
+          data.latency <= memoizedFilters.latencyRange[1];
+
+        console.log(
+          `Filtering data: exchangeId=${data.exchangeId}, cloudRegionId=${data.cloudRegionId}, latency=${data.latency}, passesFilter=${passesFilter}`
+        );
+        return passesFilter;
+      });
+
+      console.log(
+        "Filtered Latency Data:",
+        JSON.stringify(filteredLatencyData, null, 2)
+      );
+
+      // Create GeoJSON for connections
+      const connectionFeatures: Feature<Geometry, ConnectionProperties>[] =
+        filteredLatencyData
+          .map((data) => {
+            const exchange = exchanges.find((e) => e.id === data.exchangeId);
+            const region = cloudRegions.find(
+              (r) => r.id === data.cloudRegionId
+            );
+
+            if (!exchange || !region) {
+              console.warn(
+                `Skipping feature creation: exchangeId=${data.exchangeId}, cloudRegionId=${data.cloudRegionId}`
+              );
+              return null;
+            }
+
+            let color = "#00FF88"; // Green
+            if (data.latency >= 150) color = "#FF3366"; // Red
+            else if (data.latency >= 50) color = "#FFB800"; // Yellow
+
+            const feature = {
+              type: "Feature",
+              properties: {
+                latency: data.latency,
+                color,
+                opacity: Math.max(0.3, 1 - data.latency / 500),
+                exchangeName: exchange.name || "Unknown Exchange",
+                regionName:
+                  `${region.provider} ${region.location}` || "Unknown Region",
+                packetLoss: data.packetLoss,
+              },
+              geometry: {
+                type: "LineString",
+                coordinates: [
+                  [exchange.coordinates[1], exchange.coordinates[0]],
+                  [region.coordinates[1], region.coordinates[0]],
+                ],
+              },
+            } as Feature<Geometry, ConnectionProperties>;
+
+            console.log(
+              `Created feature: exchange=${feature.properties.exchangeName}, region=${feature.properties.regionName}, latency=${feature.properties.latency}, packetLoss=${feature.properties.packetLoss}`
+            );
+            return feature;
+          })
+          .filter(
+            (feature): feature is Feature<Geometry, ConnectionProperties> =>
+              feature !== null
+          );
+
+      console.log(
+        "Connection Features:",
+        JSON.stringify(connectionFeatures, null, 2)
+      );
+
+      if (connectionFeatures.length > 0) {
+        // Add connection source
+        map.current.addSource("latency-connections", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: connectionFeatures,
+          },
+        });
+
+        // Add main connection layer (animated dashed line)
+        map.current.addLayer({
+          id: "latency-connections",
+          type: "line",
+          source: "latency-connections",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": ["get", "color"],
+            "line-width": 4,
+            "line-opacity": ["get", "opacity"],
+            "line-dasharray": [2, 2],
+          },
+        });
+
+        // Add glow layer for pulsing effect
+        map.current.addLayer({
+          id: "latency-connections-glow",
+          type: "line",
+          source: "latency-connections",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": ["get", "color"],
+            "line-width": 8,
+            "line-opacity": 0.3,
+            "line-blur": 4,
+          },
+        });
+
+        // Animate dashed lines
+        let dashOffset = 0;
+        const animateLines = () => {
+          if (!map.current || !map.current.isStyleLoaded()) return;
+          dashOffset += 0.1;
+          if (dashOffset > 4) dashOffset = 0;
+          map.current.setPaintProperty(
+            "latency-connections",
+            "line-dasharray",
+            [2, 2 + dashOffset]
+          );
+          map.current.setPaintProperty(
+            "latency-connections-glow",
+            "line-opacity",
+            0.3 + Math.sin(Date.now() / 500) * 0.1
+          );
+          animationFrameId.current = requestAnimationFrame(animateLines);
+        };
+
+        animationFrameId.current = requestAnimationFrame(animateLines);
+      }
+
+      // Add hover interaction for Tooltip
+      map.current.on("mouseenter", "latency-connections", (e) => {
+        if (!map.current || !e.features || !e.features[0]) {
+          console.warn(
+            "No features found on mouseenter:",
+            JSON.stringify(e, null, 2)
+          );
+          return;
+        }
+
+        const feature = e.features[0];
+        const properties = feature.properties as ConnectionProperties;
+
+        console.log(
+          `Mouseenter event: exchange=${properties.exchangeName}, region=${properties.regionName}, latency=${properties.latency}, packetLoss=${properties.packetLoss}`
         );
 
-    if (connectionFeatures.length > 0) {
-      // Add connection source
-      map.current.addSource("latency-connections", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: connectionFeatures,
-        },
-      });
-
-      // Add connection layer
-      map.current.addLayer({
-        id: "latency-connections",
-        type: "line",
-        source: "latency-connections",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": ["get", "color"],
-          "line-width": 3,
-          "line-opacity": ["get", "opacity"],
-        },
-      });
-
-      // Add hover interaction for connection lines
-      map.current.on("mouseenter", "latency-connections", (e) => {
-        if (!map.current || !e.features || !e.features[0]) return;
+        if (!properties || !properties.exchangeName || !properties.regionName) {
+          console.warn(
+            "Invalid properties for feature:",
+            JSON.stringify(properties, null, 2)
+          );
+          setTooltipData(null);
+          return;
+        }
 
         map.current.getCanvas().style.cursor = "pointer";
 
-        const feature = e.features[0];
-        const properties = feature.properties;
-
-        if (properties) {
-          const popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false,
-            offset: 15,
-          })
-            .setLngLat(e.lngLat)
-            .setHTML(
-              `
-              <div style="background: ${
-                isDark ? "#1a1a1a" : "#ffffff"
-              }; color: ${
-                isDark ? "white" : "black"
-              }; padding: 8px; border-radius: 6px; border: 1px solid ${
-                isDark ? "#333" : "#ddd"
-              }; font-size: 12px;">
-                <div style="color: ${
-                  properties.color
-                }; font-weight: bold; margin-bottom: 4px;">
-                  Latency: ${properties.latency}ms
-                </div>
-                <div style="color: ${isDark ? "#ccc" : "#666"};">
-                  Quality: ${
-                    properties.latency < 50
-                      ? "Excellent"
-                      : properties.latency < 150
-                      ? "Good"
-                      : "Poor"
-                  }
-                </div>
-              </div>
-            `
-            )
-            .addTo(map.current);
-
-          // Store popup reference to remove it later
-          (map.current as any)._connectionPopup = popup;
-        }
+        // Convert lngLat to screen coordinates
+        const point = map.current.project(e.lngLat);
+        setTooltipData({
+          exchangeName: properties.exchangeName,
+          regionName: properties.regionName,
+          latency: properties.latency,
+          packetLoss: properties.packetLoss,
+          x: point.x,
+          y: point.y - 50, // Offset above cursor
+        });
       });
 
       map.current.on("mouseleave", "latency-connections", () => {
         if (!map.current) return;
 
-        map.current.getCanvas().style.cursor = "";
+        console.log("Mouseleave event triggered");
 
-        // Remove the popup
-        if ((map.current as any)._connectionPopup) {
-          (map.current as any)._connectionPopup.remove();
-          (map.current as any)._connectionPopup = null;
-        }
+        map.current.getCanvas().style.cursor = "";
+        setTooltipData(null);
       });
+    };
+
+    if (isLoaded && map.current.isStyleLoaded()) {
+      addLatencyLayers();
+    } else {
+      console.warn("Deferring addLatencyLayers until style is loaded");
     }
-  }, [isLoaded, latencyData, filters, realTimeEnabled]);
+
+    const styleLoadListener = () => {
+      console.log("Style load listener triggered for latency layers");
+      addLatencyLayers();
+    };
+    map.current.on("style.load", styleLoadListener);
+
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+      if (map.current) {
+        map.current.off("style.load", styleLoadListener);
+        const layers = ["latency-connections", "latency-connections-glow"];
+        layers.forEach((layer) => {
+          if (map.current!.getLayer(layer)) {
+            map.current!.removeLayer(layer);
+          }
+        });
+        if (map.current.getSource("latency-connections")) {
+          map.current.removeSource("latency-connections");
+        }
+      }
+    };
+  }, [isLoaded, latencyData, memoizedFilters, realTimeEnabled, isDark]);
 
   // Add heatmap layer
   useEffect(() => {
     if (!map.current || !isLoaded) return;
 
-    if (showHeatmap) {
-      // Remove existing heatmap
+    console.log("Heatmap useEffect triggered, dependencies:", {
+      isLoaded,
+      showHeatmap,
+      latencyData,
+    });
+
+    const addHeatmapLayer = () => {
+      if (!map.current || !map.current.isStyleLoaded()) {
+        console.warn("Style not loaded, deferring addHeatmapLayer");
+        return;
+      }
+
+      console.log(
+        "Adding heatmap layer, isStyleLoaded:",
+        map.current.isStyleLoaded()
+      );
+
       if (map.current.getLayer("latency-heatmap")) {
         map.current.removeLayer("latency-heatmap");
       }
@@ -503,88 +682,113 @@ const MapboxGlobe = () => {
         map.current.removeSource("latency-heatmap");
       }
 
-      // Create heatmap data points
-      const heatmapPoints: Feature<Geometry, HeatmapProperties>[] = latencyData
-        .map((data) => {
-          const region = cloudRegions.find((r) => r.id === data.cloudRegionId);
-          if (!region) return null;
+      if (showHeatmap) {
+        const heatmapPoints: Feature<Geometry, HeatmapProperties>[] =
+          latencyData
+            .map((data) => {
+              const region = cloudRegions.find(
+                (r) => r.id === data.cloudRegionId
+              );
+              if (!region) {
+                console.warn(
+                  `Missing region: cloudRegionId=${data.cloudRegionId}`
+                );
+                return null;
+              }
 
-          return {
-            type: "Feature",
-            properties: {
-              intensity: Math.min(1, data.latency / 200),
+              return {
+                type: "Feature",
+                properties: {
+                  intensity: Math.min(1, data.latency / 200),
+                },
+                geometry: {
+                  type: "Point",
+                  coordinates: [region.coordinates[1], region.coordinates[0]],
+                },
+              } as Feature<Geometry, HeatmapProperties>;
+            })
+            .filter(
+              (feature): feature is Feature<Geometry, HeatmapProperties> =>
+                feature !== null
+            );
+
+        if (heatmapPoints.length > 0) {
+          map.current.addSource("latency-heatmap", {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: heatmapPoints,
             },
-            geometry: {
-              type: "Point",
-              coordinates: [region.coordinates[1], region.coordinates[0]],
-            },
-          } as Feature<Geometry, HeatmapProperties>;
-        })
-        .filter(
-          (feature): feature is Feature<Geometry, HeatmapProperties> =>
-            feature !== null
-        );
+          });
 
-      if (heatmapPoints.length > 0) {
-        map.current.addSource("latency-heatmap", {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: heatmapPoints,
-          },
-        });
-
-        map.current.addLayer({
-          id: "latency-heatmap",
-          type: "heatmap",
-          source: "latency-heatmap",
-          maxzoom: 9,
-          paint: {
-            "heatmap-weight": ["get", "intensity"],
-            "heatmap-intensity": {
-              type: "exponential",
-              stops: [
-                [0, 1],
-                [9, 3],
+          map.current.addLayer({
+            id: "latency-heatmap",
+            type: "heatmap",
+            source: "latency-heatmap",
+            maxzoom: 9,
+            paint: {
+              "heatmap-weight": ["get", "intensity"],
+              "heatmap-intensity": {
+                type: "exponential",
+                stops: [
+                  [0, 1],
+                  [9, 3],
+                ],
+              },
+              "heatmap-color": [
+                "interpolate",
+                ["linear"],
+                ["heatmap-density"],
+                0,
+                "rgba(33,102,172,0)",
+                0.2,
+                "rgb(103,169,207)",
+                0.4,
+                "rgb(209,229,240)",
+                0.6,
+                "rgb(253,219,199)",
+                0.8,
+                "rgb(239,138,98)",
+                1,
+                "rgb(178,24,43)",
               ],
+              "heatmap-radius": {
+                type: "exponential",
+                stops: [
+                  [0, 20],
+                  [9, 40],
+                ],
+              },
+              "heatmap-opacity": 0.8,
             },
-            "heatmap-color": [
-              "interpolate",
-              ["linear"],
-              ["heatmap-density"],
-              0,
-              "rgba(33,102,172,0)",
-              0.2,
-              "rgb(103,169,207)",
-              0.4,
-              "rgb(209,229,240)",
-              0.6,
-              "rgb(253,219,199)",
-              0.8,
-              "rgb(239,138,98)",
-              1,
-              "rgb(178,24,43)",
-            ],
-            "heatmap-radius": {
-              type: "exponential",
-              stops: [
-                [0, 20],
-                [9, 40],
-              ],
-            },
-            "heatmap-opacity": 0.8,
-          },
-        });
+          });
+        }
       }
+    };
+
+    if (isLoaded && map.current.isStyleLoaded()) {
+      addHeatmapLayer();
     } else {
-      // Remove heatmap
-      if (map.current.getLayer("latency-heatmap")) {
-        map.current.removeLayer("latency-heatmap");
-      }
-      if (map.current.getSource("latency-heatmap")) {
-        map.current.removeSource("latency-heatmap");
-      }
+      console.warn("Deferring addHeatmapLayer until style is loaded");
     }
+
+    const styleLoadListener = () => {
+      console.log("Style load listener triggered for heatmap layer");
+      addHeatmapLayer();
+    };
+    map.current.on("style.load", styleLoadListener);
+
+    return () => {
+      if (map.current) {
+        map.current.off("style.load", styleLoadListener);
+        if (map.current.getLayer("latency-heatmap")) {
+          map.current.removeLayer("latency-heatmap");
+        }
+        if (map.current.getSource("latency-heatmap")) {
+          map.current.removeSource("latency-heatmap");
+        }
+      }
+    };
   }, [isLoaded, showHeatmap, latencyData]);
 
   return (
@@ -592,10 +796,73 @@ const MapboxGlobe = () => {
       <div
         ref={mapContainer}
         className="w-full h-full"
-        style={{ minHeight: "100vh" }}
+        style={{ minHeight: "100vh", position: "relative" }}
       />
+      {tooltipData && (
+        <div
+          style={{
+            position: "absolute",
+            left: tooltipData.x,
+            top: tooltipData.y,
+            zIndex: 10000,
+            pointerEvents: "none",
+          }}
+        >
+          <Tooltip
+            isAnimationActive={false}
+            contentStyle={{
+              backgroundColor: isDark ? "#1E293B" : "#ffffff",
+              border: `1px solid ${isDark ? "#475569" : "#e2e8f0"}`,
+              borderRadius: "8px",
+              color: isDark ? "#F8FAFC" : "#1e293b",
+              padding: "8px",
+              fontSize: "12px",
+              maxWidth: "250px",
+              fontFamily: "Arial, sans-serif",
+            }}
+            formatter={(value: number, name: string) => [
+              `${value}${name === "latency" ? "ms" : "%"}`,
+              name === "latency" ? "Latency" : "Packet Loss",
+            ]}
+            labelFormatter={() =>
+              `${tooltipData.exchangeName} → ${tooltipData.regionName}`
+            }
+            payload={[
+              {
+                name: "latency",
+                value:
+                  tooltipData.latency != null
+                    ? Number(tooltipData.latency.toFixed(0))
+                    : undefined,
+                color:
+                  tooltipData.latency != null
+                    ? tooltipData.latency < 50
+                      ? "#00FF88"
+                      : tooltipData.latency < 150
+                      ? "#FFB800"
+                      : "#FF3366"
+                    : "#666",
+              },
+              {
+                name: "packetLoss",
+                value:
+                  tooltipData.packetLoss != null
+                    ? Number(tooltipData.packetLoss.toFixed(1))
+                    : undefined,
+                color:
+                  tooltipData.packetLoss != null
+                    ? tooltipData.packetLoss < 1
+                      ? "#00FF88"
+                      : tooltipData.packetLoss < 3
+                      ? "#FFB800"
+                      : "#FF3366"
+                    : "#666",
+              },
+            ]}
+          />
+        </div>
+      )}
 
-      {/* Add custom CSS for animations */}
       <style jsx global>{`
         @keyframes pulse {
           0% {
@@ -609,26 +876,20 @@ const MapboxGlobe = () => {
           }
         }
 
-        .mapboxgl-popup-content {
-          background: ${isDark ? "#1a1a1a" : "#ffffff"} !important;
-          border: 1px solid ${isDark ? "#333" : "#ddd"} !important;
+        .recharts-tooltip-wrapper {
+          z-index: 10000 !important;
+          pointer-events: none;
+        }
+
+        .recharts-default-tooltip {
+          background-color: ${isDark ? "#1E293B" : "#ffffff"} !important;
+          border: 1px solid ${isDark ? "#475569" : "#e2e8f0"} !important;
           border-radius: 8px !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-        }
-
-        .mapboxgl-popup-tip {
-          border-top-color: ${isDark ? "#1a1a1a" : "#ffffff"} !important;
-        }
-
-        .mapboxgl-popup-close-button {
-          color: ${isDark ? "#fff" : "#000"} !important;
-          font-size: 16px !important;
-          padding: 4px !important;
-        }
-
-        .mapboxgl-popup-close-button:hover {
-          background: ${isDark ? "#333" : "#f0f0f0"} !important;
-          border-radius: 4px !important;
+          color: ${isDark ? "#F8FAFC" : "#1e293b"} !important;
+          padding: 8px !important;
+          font-size: 12px !important;
+          max-width: 250px !important;
+          font-family: Arial, sans-serif !important;
         }
       `}</style>
     </>

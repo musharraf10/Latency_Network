@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { exchanges, cloudRegions } from "@/data/mockData";
@@ -31,34 +31,42 @@ const NetworkTopology = () => {
     let filteredData = latencyData;
 
     if (selectedExchange) {
-      filteredData = filteredData.filter(data => data.exchangeId === selectedExchange);
+      filteredData = filteredData.filter(
+        (data) => data.exchangeId === selectedExchange
+      );
     }
 
     if (selectedCloudRegion) {
-      filteredData = filteredData.filter(data => data.cloudRegionId === selectedCloudRegion);
+      filteredData = filteredData.filter(
+        (data) => data.cloudRegionId === selectedCloudRegion
+      );
     }
 
-    return filteredData.map(data => {
-      const exchange = exchanges.find(e => e.id === data.exchangeId);
-      const region = cloudRegions.find(r => r.id === data.cloudRegionId);
+    return filteredData
+      .map((data) => {
+        const exchange = exchanges.find((e) => e.id === data.exchangeId);
+        const region = cloudRegions.find((r) => r.id === data.cloudRegionId);
 
-      if (!exchange || !region) return null;
+        if (!exchange || !region) return null;
 
-      // Simulate network path details
-      const hops = Math.floor(Math.random() * 8) + 3;
-      const bandwidth = ["1 Gbps", "10 Gbps", "100 Gbps"][Math.floor(Math.random() * 3)];
+        // Simulate network path details
+        const hops = Math.floor(Math.random() * 8) + 3;
+        const bandwidth = ["1 Gbps", "10 Gbps", "100 Gbps"][
+          Math.floor(Math.random() * 3)
+        ];
 
-      return {
-        id: `${data.exchangeId}-${data.cloudRegionId}`,
-        exchangeName: exchange.name,
-        regionName: `${region.provider} ${region.location}`,
-        provider: region.provider,
-        latency: data.latency,
-        packetLoss: data.packetLoss,
-        hops,
-        bandwidth,
-      };
-    }).filter(Boolean) as ConnectionPath[];
+        return {
+          id: `${data.exchangeId}-${data.cloudRegionId}`,
+          exchangeName: exchange.name,
+          regionName: `${region.provider} ${region.location}`,
+          provider: region.provider,
+          latency: data.latency,
+          packetLoss: data.packetLoss,
+          hops,
+          bandwidth,
+        };
+      })
+      .filter(Boolean) as ConnectionPath[];
   }, [latencyData, selectedExchange, selectedCloudRegion]);
 
   const getLatencyColor = (latency: number) => {
@@ -69,10 +77,14 @@ const NetworkTopology = () => {
 
   const getProviderColor = (provider: string) => {
     switch (provider) {
-      case "AWS": return "bg-orange-500";
-      case "GCP": return "bg-blue-500";
-      case "Azure": return "bg-cyan-400";
-      default: return "bg-gray-500";
+      case "AWS":
+        return "bg-orange-500";
+      case "GCP":
+        return "bg-blue-500";
+      case "Azure":
+        return "bg-cyan-400";
+      default:
+        return "bg-gray-500";
     }
   };
 
@@ -101,7 +113,11 @@ const NetworkTopology = () => {
                     {path.exchangeName}
                   </span>
                   <ArrowRight className="w-3 h-3 text-slate-400" />
-                  <div className={`w-2 h-2 rounded-sm ${getProviderColor(path.provider)}`} />
+                  <div
+                    className={`w-2 h-2 rounded-sm ${getProviderColor(
+                      path.provider
+                    )}`}
+                  />
                   <span className="text-white font-medium text-sm">
                     {path.regionName}
                   </span>
@@ -140,13 +156,15 @@ const NetworkTopology = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-slate-400">Loss:</span>
-                  <span className={
-                    path.packetLoss < 1
-                      ? "text-green-400"
-                      : path.packetLoss < 3
-                      ? "text-yellow-400"
-                      : "text-red-400"
-                  }>
+                  <span
+                    className={
+                      path.packetLoss < 1
+                        ? "text-green-400"
+                        : path.packetLoss < 3
+                        ? "text-yellow-400"
+                        : "text-red-400"
+                    }
+                  >
                     {path.packetLoss.toFixed(1)}%
                   </span>
                 </div>
@@ -162,7 +180,11 @@ const NetworkTopology = () => {
                   </React.Fragment>
                 ))}
                 <div className="flex-1 h-px bg-slate-600" />
-                <div className={`w-2 h-2 rounded-sm ${getProviderColor(path.provider)}`} />
+                <div
+                  className={`w-2 h-2 rounded-sm ${getProviderColor(
+                    path.provider
+                  )}`}
+                />
               </div>
             </motion.div>
           ))

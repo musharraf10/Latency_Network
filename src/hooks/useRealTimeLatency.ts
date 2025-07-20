@@ -7,6 +7,7 @@ import {
   NetworkPerformanceMonitor,
 } from "@/lib/api";
 import type { LatencyData, HistoricalData } from "@/types";
+import { exchanges, cloudRegions } from "@/data/mockData";
 
 export const useRealTimeLatency = () => {
   const [latencyData, setLatencyData] = useState<LatencyData[]>([]);
@@ -20,26 +21,21 @@ export const useRealTimeLatency = () => {
   const monitorRef = useRef<LatencyMonitor | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  // Initialize latency monitor
   useEffect(() => {
     const initializeMonitor = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Get network information
         const netInfo = await NetworkPerformanceMonitor.getNetworkInfo();
         setNetworkInfo(netInfo);
 
-        // Get performance metrics
         const perfMetrics =
           await NetworkPerformanceMonitor.measurePageLoadPerformance();
         setPerformanceMetrics(perfMetrics);
 
-        // Initialize latency monitor
         monitorRef.current = LatencyMonitor.getInstance();
 
-        // Subscribe to real-time updates
         unsubscribeRef.current = monitorRef.current.subscribe(
           (data: LatencyData[]) => {
             setLatencyData(data);
@@ -48,7 +44,26 @@ export const useRealTimeLatency = () => {
           }
         );
 
-        // Start monitoring
+        // Fetch historical data for all exchange-region pairs
+        const historical: HistoricalData[] = [];
+        for (const exchange of exchanges) {
+          for (const region of cloudRegions) {
+            const data = await HistoricalDataAPI.fetchHistoricalData(
+              exchange.id,
+              region.id,
+              24
+            );
+            historical.push(
+              ...data.map((d) => ({
+                ...d,
+                exchangeId: exchange.id,
+                cloudRegionId: region.id,
+              }))
+            );
+          }
+        }
+        setHistoricalData(historical.slice(-1000));
+
         await monitorRef.current.start();
         setIsLoading(false);
       } catch (err) {
@@ -60,7 +75,6 @@ export const useRealTimeLatency = () => {
 
     initializeMonitor();
 
-    // Cleanup on unmount
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
@@ -71,7 +85,6 @@ export const useRealTimeLatency = () => {
     };
   }, []);
 
-  // Monitor network status changes
   useEffect(() => {
     const handleOnline = () => {
       setIsConnected(true);
@@ -105,7 +118,18 @@ export const useRealTimeLatency = () => {
           regionId,
           hours
         );
-        setHistoricalData(data);
+        setHistoricalData((prev) =>
+          [
+            ...prev.filter(
+              (d) => d.exchangeId !== exchangeId || d.cloudRegionId !== regionId
+            ),
+            ...data.map((d) => ({
+              ...d,
+              exchangeId,
+              cloudRegionId: regionId,
+            })),
+          ].slice(-1000)
+        );
       } catch (err) {
         console.error("Failed to load historical data:", err);
         setError("Failed to load historical data");
@@ -138,7 +162,6 @@ export const useRealTimeLatency = () => {
     }
   }, []);
 
-  // Calculate statistics
   const statistics = {
     avgLatency:
       latencyData.length > 0

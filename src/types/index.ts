@@ -25,6 +25,8 @@ export interface LatencyData {
 }
 
 export interface HistoricalData {
+  exchangeId?: string;
+  cloudRegionId?: string;
   timestamp: number;
   latency: number;
   packetLoss: number;

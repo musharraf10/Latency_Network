@@ -20,7 +20,6 @@ import {
 import { useStore } from "@/hooks/useStore";
 import { useLatencyData } from "@/hooks/useLatencyData";
 import { exchanges } from "@/data/mockData";
-import { useTheme } from "@/hooks/useTheme";
 import { format } from "date-fns";
 
 // Define TypeScript interfaces for type safety
@@ -47,7 +46,6 @@ interface LatencyData {
 }
 
 const HistoricalChart = () => {
-  const { isDark } = useTheme();
   const { selectedExchange, showHistorical, setShowHistorical } =
     useStore() as StoreState;
   const { historicalData, loadHistoricalData } = useLatencyData();
@@ -88,15 +86,9 @@ const HistoricalChart = () => {
       open={showHistorical && !!selectedExchange}
       onOpenChange={setShowHistorical}
     >
-      <DialogContent className={`max-w-4xl max-h-[80vh] transition-colors ${
-        isDark 
-          ? "bg-slate-900 border-slate-700" 
-          : "bg-white border-slate-300"
-      }`}>
+      <DialogContent className="max-w-4xl max-h-[80vh] bg-slate-900 border-slate-700">
         <DialogHeader>
-          <DialogTitle className={`flex items-center justify-between ${
-            isDark ? "text-white" : "text-slate-900"
-          }`}>
+          <DialogTitle className="text-white flex items-center justify-between">
             <span>
               Historical Latency - {exchange?.name ?? "Unknown Exchange"}
             </span>
@@ -129,45 +121,37 @@ const HistoricalChart = () => {
         <div className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4">
-            <div className={`rounded-lg p-4 text-center transition-colors ${
-              isDark ? "bg-slate-800" : "bg-slate-100"
-            }`}>
+            <div className="bg-slate-800 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-green-400">
                 {avgLatency}ms
               </div>
-              <div className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Average</div>
+              <div className="text-sm text-slate-400">Average</div>
             </div>
-            <div className={`rounded-lg p-4 text-center transition-colors ${
-              isDark ? "bg-slate-800" : "bg-slate-100"
-            }`}>
+            <div className="bg-slate-800 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-red-400">
                 {maxLatency}ms
               </div>
-              <div className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Maximum</div>
+              <div className="text-sm text-slate-400">Maximum</div>
             </div>
-            <div className={`rounded-lg p-4 text-center transition-colors ${
-              isDark ? "bg-slate-800" : "bg-slate-100"
-            }`}>
+            <div className="bg-slate-800 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-blue-400">
                 {minLatency}ms
               </div>
-              <div className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Minimum</div>
+              <div className="text-sm text-slate-400">Minimum</div>
             </div>
           </div>
 
           {/* Chart */}
           <div
-            className={`rounded-lg p-4 transition-colors ${
-              isDark ? "bg-slate-800" : "bg-slate-100"
-            }`}
+            className="bg-slate-800 rounded-lg p-4"
             style={{ height: "400px" }}
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#e2e8f0"} />
-                <XAxis dataKey="time" stroke={isDark ? "#94A3B8" : "#64748b"} fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="time" stroke="#94A3B8" fontSize={12} />
                 <YAxis
-                  stroke={isDark ? "#94A3B8" : "#64748b"}
+                  stroke="#94A3B8"
                   fontSize={12}
                   label={{
                     value: "Latency (ms)",
@@ -178,7 +162,7 @@ const HistoricalChart = () => {
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  stroke={isDark ? "#94A3B8" : "#64748b"}
+                  stroke="#94A3B8"
                   fontSize={12}
                   label={{
                     value: "Packet Loss (%)",
@@ -188,10 +172,10 @@ const HistoricalChart = () => {
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: isDark ? "#1E293B" : "#ffffff",
-                    border: `1px solid ${isDark ? "#475569" : "#e2e8f0"}`,
+                    backgroundColor: "#1E293B",
+                    border: "1px solid #475569",
                     borderRadius: "8px",
-                    color: isDark ? "#F8FAFC" : "#1e293b",
+                    color: "#F8FAFC",
                   }}
                   formatter={(value: number, name: string) => [
                     `${value}${name === "latency" ? "ms" : "%"}`,

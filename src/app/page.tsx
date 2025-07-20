@@ -15,10 +15,6 @@ import { useTheme } from "@/hooks/useTheme";
 import MapboxGlobe from "@/components/MapboxGlobe";
 
 // Dynamically import Globe component to avoid SSR issues with Three.js
-const Globe = dynamic(() => import("@/components/MapboxGlobe"), {
-  ssr: false,
-  loading: () => <LoadingScreen />,
-});
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -150,7 +146,7 @@ export default function Home() {
 
       {/* Legend */}
       <motion.div
-        className="absolute bottom-4 right-4 z-10 hidden lg:block max-w-xs"
+        className="absolute bottom-4 right-4 z-99 hidden lg:block max-w-[280px]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
@@ -159,7 +155,7 @@ export default function Home() {
           className={`backdrop-blur-md rounded-lg p-3 border transition-colors shadow-lg ${
             isDark
               ? "bg-black/40 border-slate-700/50 text-white"
-              : "bg-white/90 border-slate-300/50 text-slate-900"
+              : "bg-white/95 border-slate-300/50 text-slate-900"
           }`}
         >
           <h3 className="font-semibold mb-2 text-sm">Latency Legend</h3>
@@ -167,8 +163,8 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-400"></div>
               <span
-                className={`text-xs ${
-                  isDark ? "text-slate-300" : "text-slate-700"
+                className={`text-xs font-medium ${
+                  isDark ? "text-slate-300" : "text-slate-800"
                 }`}
               >
                 &lt; 50ms - Excellent
@@ -177,8 +173,8 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-amber-400"></div>
               <span
-                className={`text-xs ${
-                  isDark ? "text-slate-300" : "text-slate-700"
+                className={`text-xs font-medium ${
+                  isDark ? "text-slate-300" : "text-slate-800"
                 }`}
               >
                 50-150ms - Good
@@ -187,8 +183,8 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-400"></div>
               <span
-                className={`text-xs ${
-                  isDark ? "text-slate-300" : "text-slate-700"
+                className={`text-xs font-medium ${
+                  isDark ? "text-slate-300" : "text-slate-800"
                 }`}
               >
                 {" "}
@@ -199,7 +195,7 @@ export default function Home() {
 
           <div
             className={`mt-3 pt-2 border-t ${
-              isDark ? "border-slate-700" : "border-slate-400"
+              isDark ? "border-slate-700" : "border-slate-300"
             }`}
           >
             <h4 className="font-medium mb-2 text-sm">Markers</h4>
@@ -207,8 +203,8 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
                 <span
-                  className={`text-xs ${
-                    isDark ? "text-slate-300" : "text-slate-700"
+                  className={`text-xs font-medium ${
+                    isDark ? "text-slate-300" : "text-slate-800"
                   }`}
                 >
                   Crypto Exchanges
@@ -217,8 +213,8 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-400"></div>
                 <span
-                  className={`text-xs ${
-                    isDark ? "text-slate-300" : "text-slate-700"
+                  className={`text-xs font-medium ${
+                    isDark ? "text-slate-300" : "text-slate-800"
                   }`}
                 >
                   Cloud Regions
@@ -229,15 +225,14 @@ export default function Home() {
 
           <div
             className={`mt-2 pt-2 border-t ${
-              isDark ? "border-slate-700" : "border-slate-400"
+              isDark ? "border-slate-700" : "border-slate-300"
             }`}
           >
             <div
-              className={`text-xs ${
-                isDark ? "text-slate-400" : "text-slate-600"
+              className={`text-xs font-medium ${
+                isDark ? "text-slate-400" : "text-slate-700"
               }`}
             >
-              <div>Real-time API integration</div>
               <div>Live network monitoring</div>
             </div>
           </div>
