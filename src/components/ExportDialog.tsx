@@ -179,24 +179,42 @@ const ExportDialog = () => {
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-2 border-border text-foreground"
+          className={`w-full flex items-center gap-2 justify-start transition-colors ${
+            isDark
+              ? "border-slate-600 text-white hover:bg-slate-700"
+              : "border-slate-300 text-slate-900 hover:bg-slate-100"
+          }`}
         >
           <Download className="w-4 h-4" />
           Export
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md bg-background border-border">
+      <DialogContent className={`max-w-md transition-colors ${
+        isDark
+          ? "bg-slate-900 border-slate-700"
+          : "bg-white border-slate-300"
+      }`}>
         <DialogHeader>
-          <DialogTitle className="text-foreground">Export Data</DialogTitle>
+          <DialogTitle className={isDark ? "text-white" : "text-slate-900"}>
+            Export Data
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          <Card className="bg-card border-border">
+          <Card className={`transition-colors ${
+            isDark
+              ? "bg-slate-800 border-slate-700"
+              : "bg-slate-50 border-slate-200"
+          }`}>
             <CardContent className="p-4 space-y-3">
               <Button
                 onClick={exportToJSON}
                 disabled={isExporting}
-                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
+                className={`w-full justify-start transition-colors ${
+                  isDark
+                    ? "text-white hover:bg-slate-700"
+                    : "text-slate-900 hover:bg-slate-200"
+                }`}
                 variant="ghost"
               >
                 <Database className="w-4 h-4 mr-2" />
@@ -206,7 +224,11 @@ const ExportDialog = () => {
               <Button
                 onClick={exportToCSV}
                 disabled={isExporting}
-                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
+                className={`w-full justify-start transition-colors ${
+                  isDark
+                    ? "text-white hover:bg-slate-700"
+                    : "text-slate-900 hover:bg-slate-200"
+                }`}
                 variant="ghost"
               >
                 <FileText className="w-4 h-4 mr-2" />
@@ -216,7 +238,11 @@ const ExportDialog = () => {
               <Button
                 onClick={exportReport}
                 disabled={isExporting}
-                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
+                className={`w-full justify-start transition-colors ${
+                  isDark
+                    ? "text-white hover:bg-slate-700"
+                    : "text-slate-900 hover:bg-slate-200"
+                }`}
                 variant="ghost"
               >
                 <FileText className="w-4 h-4 mr-2" />
@@ -226,7 +252,11 @@ const ExportDialog = () => {
               <Button
                 onClick={captureScreenshot}
                 disabled={isExporting}
-                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
+                className={`w-full justify-start transition-colors ${
+                  isDark
+                    ? "text-white hover:bg-slate-700"
+                    : "text-slate-900 hover:bg-slate-200"
+                }`}
                 variant="ghost"
               >
                 <Image className="w-4 h-4 mr-2" />
@@ -235,7 +265,9 @@ const ExportDialog = () => {
             </CardContent>
           </Card>
 
-          <div className="text-xs text-muted-foreground space-y-1">
+          <div className={`text-xs space-y-1 ${
+            isDark ? "text-slate-400" : "text-slate-600"
+          }`}>
             <p>• JSON: Complete dataset with metadata</p>
             <p>• CSV: Spreadsheet-compatible format</p>
             <p>• Report: Analysis with recommendations</p>

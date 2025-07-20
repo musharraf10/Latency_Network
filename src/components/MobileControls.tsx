@@ -414,10 +414,15 @@ const MobileControls = () => {
                       </Button>
                       <div className="pt-2 border-t border-slate-700">
                         <div className="space-y-3">
-                          <h4 className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
-                            Add Crypto Route
-                          </h4>
-                          <CryptoTransactionCreator />
+                          <div className="space-y-2">
+                            <h4 className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+                              Tools
+                            </h4>
+                            <div className="space-y-2">
+                              <ExportDialog />
+                              <CryptoTransactionCreator />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

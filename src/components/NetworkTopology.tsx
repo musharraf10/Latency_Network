@@ -13,6 +13,13 @@ import { exchanges, cloudRegions } from "@/data/mockData";
 import { Network, ArrowRight, Zap, Clock, Search } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 
+interface SearchResult {
+  id: string;
+  name: string;
+  type: "exchange" | "region";
+  provider?: string;
+}
+
 interface ConnectionPath {
   id: string;
   exchangeName: string;
@@ -26,9 +33,65 @@ interface ConnectionPath {
 
 const NetworkTopology = () => {
   const { isDark } = useTheme();
-  const { selectedExchange, selectedCloudRegion } = useStore();
+  const { selectedExchange, selectedCloudRegion, setSelectedExchange, setSelectedCloudRegion } = useStore();
   const { latencyData } = useRealTimeLatency();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Search functionality
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const results: SearchResult[] = [];
+
+    // Search exchanges
+    exchanges.forEach(exchange => {
+      if (exchange.name.toLowerCase().includes(lowerQuery) ||
+          exchange.id.toLowerCase().includes(lowerQuery) ||
+          exchange.region.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          id: exchange.id,
+          name: exchange.name,
+          type: "exchange"
+        });
+      }
+    });
+
+    // Search cloud regions
+    cloudRegions.forEach(region => {
+      if (region.location.toLowerCase().includes(lowerQuery) ||
+          region.provider.toLowerCase().includes(lowerQuery) ||
+          region.regionCode.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          id: region.id,
+          name: `${region.provider} ${region.location}`,
+          type: "region",
+          provider: region.provider
+        });
+      }
+    });
+
+    setSearchResults(results.slice(0, 5)); // Limit to 5 results
+    setShowSearchResults(true);
+  };
+
+  const handleSelectSearchResult = (result: SearchResult) => {
+    if (result.type === "exchange") {
+      setSelectedExchange(result.id);
+    } else {
+      setSelectedCloudRegion(result.id);
+    }
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
 
   const connectionPaths = useMemo(() => {
     if (!selectedExchange && !selectedCloudRegion) return [];
@@ -118,20 +181,55 @@ const NetworkTopology = () => {
         </CardTitle>
         
         {/* Search Input */}
-        <div className="relative mt-3">
+        <div className="relative mt-3 mb-4">
           <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
             isDark ? "text-slate-400" : "text-slate-500"
           }`} />
           <Input
             placeholder="Search exchanges or regions..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
+            onFocus={() => searchQuery && setShowSearchResults(true)}
+            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
             className={`pl-10 transition-colors ${
               isDark 
                 ? "bg-slate-800 border-slate-600 text-white placeholder-slate-400" 
                 : "bg-white border-slate-300 text-slate-900 placeholder-slate-500"
             }`}
           />
+          
+          {/* Search Results Dropdown */}
+          {showSearchResults && searchResults.length > 0 && (
+            <div className={`absolute top-full left-0 right-0 mt-1 rounded-md border shadow-lg z-50 transition-colors ${
+              isDark
+                ? "bg-slate-800 border-slate-700"
+                : "bg-white border-slate-300"
+            }`}>
+              {searchResults.map((result) => (
+                <button
+                  key={`${result.type}-${result.id}`}
+                  onClick={() => handleSelectSearchResult(result)}
+                  className={`w-full px-3 py-2 text-left hover:bg-opacity-50 transition-colors first:rounded-t-md last:rounded-b-md ${
+                    isDark
+                      ? "hover:bg-slate-700 text-white"
+                      : "hover:bg-slate-100 text-slate-900"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {result.type === "exchange" ? (
+                      <div className="w-2 h-2 rounded-full bg-green-400" />
+                    ) : (
+                      <div className={`w-2 h-2 rounded-sm ${getProviderColor(result.provider || "")}`} />
+                    )}
+                    <span className="text-sm font-medium">{result.name}</span>
+                    <Badge variant="outline" className="text-xs ml-auto">
+                      {result.type}
+                    </Badge>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-3 max-h-80 overflow-y-auto">
