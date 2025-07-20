@@ -1,3 +1,4 @@
+// src/components/ExportDialog.tsx
 "use client";
 
 import { useState } from "react";
@@ -22,7 +23,7 @@ const ExportDialog = () => {
       timestamp: new Date().toISOString(),
       statistics,
       latencyData,
-      historicalData: historicalData.slice(-100), // Last 100 points
+      historicalData: historicalData.slice(-100),
       metadata: {
         totalConnections: latencyData.length,
         exportedAt: Date.now(),
@@ -80,7 +81,6 @@ const ExportDialog = () => {
     setIsExporting(true);
 
     try {
-      // Generate comprehensive report
       const report = {
         title: "Latency Topology Analysis Report",
         generatedAt: new Date().toISOString(),
@@ -94,7 +94,7 @@ const ExportDialog = () => {
           packetLoss: statistics.avgPacketLoss,
         },
         recommendations: generateRecommendations(),
-        detailedData: latencyData.slice(0, 50), // Top 50 connections
+        detailedData: latencyData.slice(0, 50),
       };
 
       const blob = new Blob([JSON.stringify(report, null, 2)], {
@@ -145,10 +145,9 @@ const ExportDialog = () => {
     setIsExporting(true);
 
     try {
-      // Use html2canvas to capture the visualization
       const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(document.body, {
-        backgroundColor: "#0f172a",
+        backgroundColor: "hsl(var(--background))",
         scale: 2,
         useCORS: true,
       });
@@ -177,23 +176,27 @@ const ExportDialog = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2 border-border text-foreground"
+        >
           <Download className="w-4 h-4" />
           Export
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md bg-slate-900 border-slate-700">
+      <DialogContent className="max-w-md bg-background border-border">
         <DialogHeader>
-          <DialogTitle className="text-white">Export Data</DialogTitle>
+          <DialogTitle className="text-foreground">Export Data</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          <Card className="bg-slate-800 border-slate-700">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 space-y-3">
               <Button
                 onClick={exportToJSON}
                 disabled={isExporting}
-                className="w-full justify-start"
+                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
                 variant="ghost"
               >
                 <Database className="w-4 h-4 mr-2" />
@@ -203,7 +206,7 @@ const ExportDialog = () => {
               <Button
                 onClick={exportToCSV}
                 disabled={isExporting}
-                className="w-full justify-start"
+                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
                 variant="ghost"
               >
                 <FileText className="w-4 h-4 mr-2" />
@@ -213,7 +216,7 @@ const ExportDialog = () => {
               <Button
                 onClick={exportReport}
                 disabled={isExporting}
-                className="w-full justify-start"
+                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
                 variant="ghost"
               >
                 <FileText className="w-4 h-4 mr-2" />
@@ -223,7 +226,7 @@ const ExportDialog = () => {
               <Button
                 onClick={captureScreenshot}
                 disabled={isExporting}
-                className="w-full justify-start"
+                className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
                 variant="ghost"
               >
                 <Image className="w-4 h-4 mr-2" />
@@ -232,7 +235,7 @@ const ExportDialog = () => {
             </CardContent>
           </Card>
 
-          <div className="text-xs text-slate-400 space-y-1">
+          <div className="text-xs text-muted-foreground space-y-1">
             <p>• JSON: Complete dataset with metadata</p>
             <p>• CSV: Spreadsheet-compatible format</p>
             <p>• Report: Analysis with recommendations</p>

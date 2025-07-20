@@ -49,6 +49,14 @@ export const exchanges: Exchange[] = [
     volume24h: 1120000000,
     status: "online",
   },
+  {
+    id: "wazirx",
+    name: "WazirX",
+    coordinates: [19.076, 72.8777],
+    region: "India",
+    volume24h: 850000000,
+    status: "online",
+  },
 ];
 
 export const cloudRegions: CloudRegion[] = [
@@ -61,6 +69,15 @@ export const cloudRegions: CloudRegion[] = [
     coordinates: [38.9072, -77.0369],
     zones: ["a", "b", "c", "d", "e", "f"],
   },
+  {
+    id: "aws-ap-south-1",
+    provider: "AWS",
+    regionCode: "ap-south-1",
+    location: "Mumbai",
+    coordinates: [19.07609, 72.877426],
+    zones: ["a", "b", "c"],
+  },
+
   {
     id: "aws-us-west-2",
     provider: "AWS",
@@ -75,7 +92,7 @@ export const cloudRegions: CloudRegion[] = [
     regionCode: "eu-west-1",
     location: "Ireland",
     coordinates: [53.3498, -6.2603],
-    zones: ["a", "b", "c"],
+    zones: ["a", "b", "c", "z"],
   },
   {
     id: "aws-ap-southeast-1",

@@ -35,7 +35,6 @@ const MapboxGlobe = () => {
     selectedCloudRegion,
     filters,
     realTimeEnabled,
-    isDark,
     showHeatmap,
     setSelectedExchange,
     setSelectedCloudRegion,
@@ -49,8 +48,10 @@ const MapboxGlobe = () => {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/light-v11",
-      projection: { name: "globe" }, // Updated to ProjectionSpecification
+      style: isDark
+        ? "mapbox://styles/mapbox/dark-v11"
+        : "mapbox://styles/mapbox/light-v11",
+      projection: { name: "globe" },
       center: [0, 20],
       zoom: 1.5,
       pitch: 0,
@@ -129,7 +130,9 @@ const MapboxGlobe = () => {
   useEffect(() => {
     if (!map.current || !isLoaded) return;
 
-    const newStyle = isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/light-v11";
+    const newStyle = isDark
+      ? "mapbox://styles/mapbox/dark-v11"
+      : "mapbox://styles/mapbox/light-v11";
     map.current.setStyle(newStyle);
 
     map.current.once("style.load", () => {
@@ -217,19 +220,25 @@ const MapboxGlobe = () => {
 
       // Create popup
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-          <div style="background: ${isDark ? '#1a1a1a' : '#ffffff'}; color: ${isDark ? 'white' : 'black'}; padding: 12px; border-radius: 8px; border: 1px solid ${isDark ? '#333' : '#ddd'};">
+          <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
+        isDark ? "white" : "black"
+      }; padding: 12px; border-radius: 8px; border: 1px solid ${
+        isDark ? "#333" : "#ddd"
+      };">
             <h3 style="margin: 0 0 8px 0; color: #00FF88; font-size: 14px;">${
               exchange.name
             }</h3>
-            <p style="margin: 0; font-size: 12px; color: ${isDark ? '#ccc' : '#666'};">Region: ${
-              exchange.region
-            }</p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${isDark ? '#ccc' : '#666'};">Status: <span style="color: #00FF88;">${
-              exchange.status
-            }</span></p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${isDark ? '#ccc' : '#666'};">Volume: $${(
-              exchange.volume24h / 1000000000
-            ).toFixed(2)}B</p>
+            <p style="margin: 0; font-size: 12px; color: ${
+              isDark ? "#ccc" : "#666"
+            };">Region: ${exchange.region}</p>
+            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
+              isDark ? "#ccc" : "#666"
+            };">Status: <span style="color: #00FF88;">${
+        exchange.status
+      }</span></p>
+            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
+              isDark ? "#ccc" : "#666"
+            };">Volume: $${(exchange.volume24h / 1000000000).toFixed(2)}B</p>
           </div>
         `);
 
@@ -301,16 +310,20 @@ const MapboxGlobe = () => {
 
       // Create popup
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-          <div style="background: ${isDark ? '#1a1a1a' : '#ffffff'}; color: ${isDark ? 'white' : 'black'}; padding: 12px; border-radius: 8px; border: 1px solid ${isDark ? '#333' : '#ddd'};">
+          <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
+        isDark ? "white" : "black"
+      }; padding: 12px; border-radius: 8px; border: 1px solid ${
+        isDark ? "#333" : "#ddd"
+      };">
             <h3 style="margin: 0 0 8px 0; color: ${color}; font-size: 14px;">${
         region.provider
       } ${region.location}</h3>
-            <p style="margin: 0; font-size: 12px; color: ${isDark ? '#ccc' : '#666'};">Region: ${
-              region.regionCode
-            }</p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${isDark ? '#ccc' : '#666'};">Zones: ${region.zones.join(
-              ", "
-            )}</p>
+            <p style="margin: 0; font-size: 12px; color: ${
+              isDark ? "#ccc" : "#666"
+            };">Region: ${region.regionCode}</p>
+            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
+              isDark ? "#ccc" : "#666"
+            };">Zones: ${region.zones.join(", ")}</p>
           </div>
         `);
 
@@ -401,7 +414,7 @@ const MapboxGlobe = () => {
       // Add connection layer
       map.current.addLayer({
         id: "latency-connections",
-        type: "line",
+        type: "symbol",
         source: "latency-connections",
         layout: {
           "line-join": "round",
@@ -536,24 +549,24 @@ const MapboxGlobe = () => {
         }
 
         .mapboxgl-popup-content {
-          background: ${isDark ? '#1a1a1a' : '#ffffff'} !important;
-          border: 1px solid ${isDark ? '#333' : '#ddd'} !important;
+          background: ${isDark ? "#1a1a1a" : "#ffffff"} !important;
+          border: 1px solid ${isDark ? "#333" : "#ddd"} !important;
           border-radius: 8px !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
         }
 
         .mapboxgl-popup-tip {
-          border-top-color: ${isDark ? '#1a1a1a' : '#ffffff'} !important;
+          border-top-color: ${isDark ? "#1a1a1a" : "#ffffff"} !important;
         }
 
         .mapboxgl-popup-close-button {
-          color: ${isDark ? '#fff' : '#000'} !important;
+          color: ${isDark ? "#fff" : "#000"} !important;
           font-size: 16px !important;
           padding: 4px !important;
         }
 
         .mapboxgl-popup-close-button:hover {
-          background: ${isDark ? '#333' : '#f0f0f0'} !important;
+          background: ${isDark ? "#333" : "#f0f0f0"} !important;
           border-radius: 4px !important;
         }
       `}</style>
