@@ -164,7 +164,6 @@ const SearchPanel = () => {
                                 >
                                   {latencyInfo.avg}ms avg
                                 </Badge>
-                                <span className="text-xs text-slate-400">
                                 <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                                   {latencyInfo.min}ms min
                                 </span>
@@ -245,7 +244,6 @@ const SearchPanel = () => {
                                 >
                                   {latencyInfo.avg}ms avg
                                 </Badge>
-                                <span className="text-xs text-slate-400">
                                 <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                                   {latencyInfo.connections} connections
                                 </span>
