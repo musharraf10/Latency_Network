@@ -18,8 +18,6 @@ import {
   Settings,
   TrendingUp,
   Cloud,
-  Layers,
-  Plus,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "@/hooks/useTheme";
