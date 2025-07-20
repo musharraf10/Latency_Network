@@ -9,11 +9,13 @@ import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { exchanges, cloudRegions } from "@/data/mockData";
 import { Activity, Cloud, TrendingUp, Settings, Layers } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
 import NetworkStatus from "./NetworkStatus";
 import SearchPanel from "./SearchPanel";
 import ExportDialog from "./ExportDialog";
 
 const ControlPanel = () => {
+  const { isDark } = useTheme();
   const {
     filters,
     realTimeEnabled,
@@ -51,8 +53,7 @@ const ControlPanel = () => {
   };
 
   return (
-    <div className="absolute top-4 left-4 w-80 max-h-[calc(100vh-2rem)] overflow-y-auto z-10">
-      <div className="space-y-4">
+    <div className="absolute top-4 left-4 w-80 max-h-[calc(100vh-2rem)] overflow-y-auto z-10 space-y-4">
         {/* Network Status */}
         <NetworkStatus />
 
@@ -60,9 +61,13 @@ const ControlPanel = () => {
         <SearchPanel />
 
         {/* Exchanges Filter */}
-        <Card className="bg-black/40 backdrop-blur-md border-slate-700/50">
+        <Card className={`backdrop-blur-md transition-colors ${
+          isDark 
+            ? "bg-black/40 border-slate-700/50" 
+            : "bg-white/40 border-slate-300/50"
+        }`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className={`flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
               <TrendingUp className="w-5 h-5 text-green-400" />
               Exchanges
             </CardTitle>
@@ -81,7 +86,7 @@ const ControlPanel = () => {
                 key={exchange.id}
                 className="flex items-center justify-between"
               >
-                <span className="text-slate-300 text-sm">{exchange.name}</span>
+                <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>{exchange.name}</span>
                 <Switch
                   checked={
                     filters.exchanges.length === 0 ||
@@ -95,9 +100,13 @@ const ControlPanel = () => {
         </Card>
 
         {/* Cloud Providers Filter */}
-        <Card className="bg-black/40 backdrop-blur-md border-slate-700/50">
+        <Card className={`backdrop-blur-md transition-colors ${
+          isDark 
+            ? "bg-black/40 border-slate-700/50" 
+            : "bg-white/40 border-slate-300/50"
+        }`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className={`flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
               <Cloud className="w-5 h-5 text-blue-400" />
               Cloud Providers
             </CardTitle>
@@ -116,6 +125,7 @@ const ControlPanel = () => {
                     }`}
                   />
                   <span className="text-slate-300 text-sm">{provider}</span>
+                  <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>{provider}</span>
                 </div>
                 <Switch
                   checked={filters.cloudProviders.includes(provider)}
@@ -127,9 +137,13 @@ const ControlPanel = () => {
         </Card>
 
         {/* Controls */}
-        <Card className="bg-black/40 backdrop-blur-md border-slate-700/50">
+        <Card className={`backdrop-blur-md transition-colors ${
+          isDark 
+            ? "bg-black/40 border-slate-700/50" 
+            : "bg-white/40 border-slate-300/50"
+        }`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className={`flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
               <Settings className="w-5 h-5 text-slate-400" />
               Controls
             </CardTitle>
@@ -137,7 +151,7 @@ const ControlPanel = () => {
           <CardContent className="space-y-3">
             {/* Real-time Toggle */}
             <div className="flex justify-between items-center">
-              <span className="text-slate-300 text-sm">Real-time Updates</span>
+              <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Real-time Updates</span>
               <Switch
                 checked={realTimeEnabled}
                 onCheckedChange={handleRealTimeToggle}
@@ -146,14 +160,14 @@ const ControlPanel = () => {
 
             {/* Heatmap Toggle */}
             <div className="flex justify-between items-center">
-              <span className="text-slate-300 text-sm">Latency Heatmap</span>
+              <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Latency Heatmap</span>
               <Switch checked={showHeatmap} onCheckedChange={setShowHeatmap} />
             </div>
 
             {/* Latency Range Filter */}
             <div className="space-y-2">
-              <span className="text-slate-300 text-sm">Latency Range</span>
-              <div className="flex justify-between text-sm text-slate-300">
+              <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Latency Range</span>
+              <div className={`flex justify-between text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                 <span>{filters.latencyRange[0]}ms</span>
                 <span>{filters.latencyRange[1]}ms</span>
               </div>
@@ -192,7 +206,6 @@ const ControlPanel = () => {
             <ExportDialog />
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 };

@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { exchanges, cloudRegions } from "@/data/mockData";
+import { useTheme } from "@/hooks/useTheme";
 import { Search, MapPin, Clock, TrendingUp } from "lucide-react";
 
 const SearchPanel = () => {
+  const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const { setSelectedExchange, setSelectedCloudRegion } = useStore();
   const { latencyData } = useRealTimeLatency();
@@ -86,21 +88,31 @@ const SearchPanel = () => {
   };
 
   return (
-    <Card className="bg-black/40 backdrop-blur-md border-slate-700/50">
+    <Card className={`backdrop-blur-md transition-colors ${
+      isDark 
+        ? "bg-black/40 border-slate-700/50" 
+        : "bg-white/40 border-slate-300/50"
+    }`}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2">
+        <CardTitle className={`flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
           <Search className="w-5 h-5 text-blue-400" />
           Search
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+            isDark ? "text-slate-400" : "text-slate-500"
+          }`} />
           <Input
             placeholder="Search exchanges, regions, or providers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-slate-800 border-slate-600 text-white placeholder-slate-400"
+            className={`pl-10 transition-colors ${
+              isDark 
+                ? "bg-slate-800 border-slate-600 text-white placeholder-slate-400" 
+                : "bg-white border-slate-300 text-slate-900 placeholder-slate-500"
+            }`}
           />
         </div>
 
@@ -109,7 +121,9 @@ const SearchPanel = () => {
             {/* Exchange Results */}
             {searchResults.exchanges.length > 0 && (
               <div>
-                <h4 className="text-white font-medium mb-2 text-sm flex items-center gap-2">
+                <h4 className={`font-medium mb-2 text-sm flex items-center gap-2 ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}>
                   <TrendingUp className="w-4 h-4" />
                   Exchanges ({searchResults.exchanges.length})
                 </h4>
@@ -120,15 +134,21 @@ const SearchPanel = () => {
                       <Button
                         key={exchange.id}
                         variant="ghost"
-                        className="w-full justify-start p-3 h-auto bg-slate-800/50 hover:bg-slate-700/50"
+                        className={`w-full justify-start p-3 h-auto transition-colors ${
+                          isDark 
+                            ? "bg-slate-800/50 hover:bg-slate-700/50" 
+                            : "bg-slate-100/50 hover:bg-slate-200/50"
+                        }`}
                         onClick={() => handleExchangeSelect(exchange.id)}
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="text-left">
-                            <div className="font-medium text-white">
+                            <div className={`font-medium ${isDark ? "text-white" : "text-slate-900"}`}>
                               {exchange.name}
                             </div>
-                            <div className="text-xs text-slate-400 flex items-center gap-1">
+                            <div className={`text-xs flex items-center gap-1 ${
+                              isDark ? "text-slate-400" : "text-slate-500"
+                            }`}>
                               <MapPin className="w-3 h-3" />
                               {exchange.region}
                             </div>
@@ -145,6 +165,7 @@ const SearchPanel = () => {
                                   {latencyInfo.avg}ms avg
                                 </Badge>
                                 <span className="text-xs text-slate-400">
+                                <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                                   {latencyInfo.min}ms min
                                 </span>
                               </>
@@ -171,7 +192,9 @@ const SearchPanel = () => {
             {/* Region Results */}
             {searchResults.regions.length > 0 && (
               <div>
-                <h4 className="text-white font-medium mb-2 text-sm flex items-center gap-2">
+               <h4 className={`font-medium mb-2 text-sm flex items-center gap-2 ${
+                 isDark ? "text-white" : "text-slate-900"
+               }`}>
                   <MapPin className="w-4 h-4" />
                   Cloud Regions ({searchResults.regions.length})
                 </h4>
@@ -188,12 +211,18 @@ const SearchPanel = () => {
                       <Button
                         key={region.id}
                         variant="ghost"
-                        className="w-full justify-start p-3 h-auto bg-slate-800/50 hover:bg-slate-700/50"
+                        className={`w-full justify-start p-3 h-auto transition-colors ${
+                          isDark 
+                            ? "bg-slate-800/50 hover:bg-slate-700/50" 
+                            : "bg-slate-100/50 hover:bg-slate-200/50"
+                        }`}
                         onClick={() => handleRegionSelect(region.id)}
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="text-left">
-                            <div className="font-medium text-white flex items-center gap-2">
+                            <div className={`font-medium flex items-center gap-2 ${
+                              isDark ? "text-white" : "text-slate-900"
+                            }`}>
                               <div
                                 className={`w-2 h-2 rounded-full ${
                                   providerColors[region.provider]
@@ -201,7 +230,7 @@ const SearchPanel = () => {
                               />
                               {region.provider} {region.location}
                             </div>
-                            <div className="text-xs text-slate-400">
+                            <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                               {region.regionCode}
                             </div>
                           </div>
@@ -217,6 +246,7 @@ const SearchPanel = () => {
                                   {latencyInfo.avg}ms avg
                                 </Badge>
                                 <span className="text-xs text-slate-400">
+                                <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                                   {latencyInfo.connections} connections
                                 </span>
                               </>
@@ -234,8 +264,8 @@ const SearchPanel = () => {
             {searchResults.exchanges.length === 0 &&
               searchResults.regions.length === 0 && (
                 <div className="text-center py-4">
-                  <div className="text-slate-400 text-sm">No results found</div>
-                  <div className="text-slate-500 text-xs mt-1">
+                  <div className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>No results found</div>
+                  <div className={`text-xs mt-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                     Try searching for exchange names, regions, or cloud
                     providers
                   </div>
@@ -247,7 +277,7 @@ const SearchPanel = () => {
         {/* Quick Actions */}
         {!searchQuery.trim() && (
           <div className="space-y-2">
-            <h4 className="text-white font-medium text-sm">Quick Actions</h4>
+            <h4 className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>Quick Actions</h4>
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
