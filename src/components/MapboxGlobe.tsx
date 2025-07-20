@@ -615,13 +615,17 @@ const MapboxGlobe = () => {
 
       map.current.on("mousemove", "latency-connections", (e) => {
         if (!map.current || !tooltipData) return;
-        
+
         const point = map.current.project(e.lngLat!);
-        setTooltipData(prev => prev ? {
-          ...prev,
-          x: point.x + 10,
-          y: point.y - 60,
-        } : null);
+        setTooltipData((prev) =>
+          prev
+            ? {
+                ...prev,
+                x: point.x + 10,
+                y: point.y - 60,
+              }
+            : null
+        );
       });
 
       map.current.on("mouseleave", "latency-connections", () => {
@@ -822,8 +826,8 @@ const MapboxGlobe = () => {
         >
           <div
             className={`px-3 py-2 rounded-lg shadow-lg border text-xs font-medium ${
-              isDark 
-                ? "bg-slate-800 border-slate-600 text-white" 
+              isDark
+                ? "bg-slate-800 border-slate-600 text-white"
                 : "bg-white border-slate-300 text-slate-900"
             }`}
             style={{ minWidth: "200px" }}
@@ -833,19 +837,29 @@ const MapboxGlobe = () => {
             </div>
             <div className="flex justify-between items-center">
               <span>Latency:</span>
-              <span className={
-                tooltipData.latency < 50 ? "text-green-400" :
-                tooltipData.latency < 150 ? "text-yellow-400" : "text-red-400"
-              }>
+              <span
+                className={
+                  tooltipData.latency < 50
+                    ? "text-green-400"
+                    : tooltipData.latency < 150
+                    ? "text-yellow-400"
+                    : "text-red-400"
+                }
+              >
                 {tooltipData.latency}ms
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span>Packet Loss:</span>
-              <span className={
-                tooltipData.packetLoss < 1 ? "text-green-400" :
-                tooltipData.packetLoss < 3 ? "text-yellow-400" : "text-red-400"
-              }>
+              <span
+                className={
+                  tooltipData.packetLoss < 1
+                    ? "text-green-400"
+                    : tooltipData.packetLoss < 3
+                    ? "text-yellow-400"
+                    : "text-red-400"
+                }
+              >
                 {tooltipData.packetLoss.toFixed(1)}%
               </span>
             </div>
