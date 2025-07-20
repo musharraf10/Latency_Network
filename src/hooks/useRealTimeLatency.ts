@@ -14,6 +14,7 @@ export const useRealTimeLatency = () => {
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [networkInfo, setNetworkInfo] = useState<any>(null);
   const [performanceMetrics, setPerformanceMetrics] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -155,12 +156,27 @@ export const useRealTimeLatency = () => {
     if (monitorRef.current) {
       if (enabled) {
         monitorRef.current.start();
+        setIsPaused(false);
       } else {
         monitorRef.current.stop();
+        setIsPaused(true);
       }
       setIsConnected(enabled);
     }
   }, []);
+
+  const pauseRealTime = useCallback(() => {
+    setIsPaused(!isPaused);
+    if (monitorRef.current) {
+      if (isPaused) {
+        monitorRef.current.start();
+        setIsConnected(true);
+      } else {
+        monitorRef.current.stop();
+        setIsConnected(false);
+      }
+    }
+  }, [isPaused]);
 
   const statistics = {
     avgLatency:
@@ -201,5 +217,7 @@ export const useRealTimeLatency = () => {
     loadHistoricalData,
     refreshData,
     toggleRealTime,
+    pauseRealTime,
+    isPaused,
   };
 };

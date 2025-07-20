@@ -21,17 +21,12 @@ export default function Home() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { isDark } = useTheme();
 
-  useEffect(() => {
-    // Simulate initial loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen onComplete={handleLoadingComplete} />;
   }
 
   return (
