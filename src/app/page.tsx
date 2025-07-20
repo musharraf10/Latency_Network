@@ -14,8 +14,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useTheme } from "@/hooks/useTheme";
 import MapboxGlobe from "@/components/MapboxGlobe";
 
-// Dynamically import Globe component to avoid SSR issues with Three.js
-
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -74,7 +72,7 @@ export default function Home() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 300 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-4 right-4 w-80 max-h-[calc(100vh-2rem)] overflow-y-auto z-10 space-y-4 hidden lg:block"
+            className="absolute top-20 right-4 w-80 max-h-[calc(100vh-2rem)] overflow-y-auto z-10 space-y-4 hidden lg:block"
           >
             <CloudRegionVisualization />
             <PerformanceDashboard />

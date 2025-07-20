@@ -22,7 +22,6 @@ import { useLatencyData } from "@/hooks/useLatencyData";
 import { exchanges } from "@/data/mockData";
 import { format } from "date-fns";
 
-// Define TypeScript interfaces for type safety
 interface Exchange {
   id: string;
   name: string;
@@ -86,7 +85,7 @@ const HistoricalChart = () => {
       open={showHistorical && !!selectedExchange}
       onOpenChange={setShowHistorical}
     >
-      <DialogContent className="max-w-4xl max-h-[80vh] bg-slate-900 border-slate-700">
+      <DialogContent className="max-w-6xl max-h-[90vh] bg-slate-900 border-slate-700">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center justify-between">
             <span>

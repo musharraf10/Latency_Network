@@ -131,21 +131,31 @@ const MobileControls = () => {
                   isDark ? "bg-slate-800/50" : "bg-slate-200/50"
                 }`}
               >
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <Button
-                      key={tab.id}
-                      variant={activeTab === tab.id ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setActiveTab(tab.id)}
-                      className="flex-1 text-xs"
-                    >
-                      <Icon className="h-3 w-3 mr-1" />
-                      {tab.label}
-                    </Button>
-                  );
-                })}
+                <div
+                  className="flex overflow-x-auto"
+                  style={{
+                    scrollbarWidth: "auto",
+                    scrollbarColor: "#ccc #f0f0f0",
+                    WebkitOverflowScrolling: "touch",
+                    msOverflowStyle: "scrollbar",
+                  }}
+                >
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <Button
+                        key={tab.id}
+                        variant={activeTab === tab.id ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setActiveTab(tab.id)}
+                        className="flex-shrink-0 text-xs"
+                      >
+                        <Icon className="h-3 w-3 mr-1" />
+                        {tab.label}
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Tab Content */}
@@ -400,22 +410,21 @@ const MobileControls = () => {
                           defaultChecked
                         />
                       </div>
-                      <Button
-                        onClick={() => {
-                          <ExportDialog />;
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                      >
-                        Export Data
-                      </Button>
                       <div className="pt-2 border-t border-slate-700">
                         <div className="space-y-3">
-                          <h4 className={`font-medium text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
-                            Add Crypto Route
-                          </h4>
-                          <CryptoTransactionCreator />
+                          <div className="space-y-2">
+                            <h4
+                              className={`font-medium text-sm ${
+                                isDark ? "text-white" : "text-slate-900"
+                              }`}
+                            >
+                              Tools
+                            </h4>
+                            <div className="space-y-2">
+                              <ExportDialog />
+                              <CryptoTransactionCreator />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
