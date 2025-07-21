@@ -121,7 +121,10 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               {/* Mobile Legend Dialog */}
-              <Dialog open={showMobileLegend} onOpenChange={setShowMobileLegend}>
+              <Dialog
+                open={showMobileLegend}
+                onOpenChange={setShowMobileLegend}
+              >
                 <DialogTrigger asChild>
                   <Button
                     variant="ghost"
@@ -136,19 +139,12 @@ export default function Home() {
                   </Button>
                 </DialogTrigger>
                 <DialogContent
-                  className={`max-w-sm mx-4 transition-colors ${
+                  className={`max-w-xs  transition-colors ${
                     isDark
                       ? "bg-slate-900 border-slate-700"
                       : "bg-white border-slate-300"
                   }`}
                 >
-                  <DialogHeader>
-                    <DialogTitle
-                      className={isDark ? "text-white" : "text-slate-900"}
-                    >
-                      Legend
-                    </DialogTitle>
-                  </DialogHeader>
                   <div className="space-y-4">
                     <div>
                       <h3
