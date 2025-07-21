@@ -225,11 +225,15 @@ const CryptoTransactionCreator = () => {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-2"
+            className={`w-full flex items-center gap-2 justify-start transition-colors ${
+              isDark
+                ? "border-slate-600 text-white hover:bg-slate-700"
+                : "border-slate-300 text-slate-900 hover:bg-slate-100"
+            }`}
             onClick={() => setIsOpen(true)}
           >
             <Plus className="w-4 h-4" />
-            Add Crypto Route
+            Add Route
           </Button>
         </DialogTrigger>
         <DialogContent

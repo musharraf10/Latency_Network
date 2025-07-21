@@ -9,27 +9,31 @@ import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { cloudRegions } from "@/data/mockData";
 import { Cloud, Server, MapPin, Activity } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
 
 const CloudRegionVisualization = () => {
   const { filters, setSelectedCloudRegion, selectedCloudRegion } = useStore();
   const { latencyData } = useRealTimeLatency();
+  const { isDark } = useTheme(); // Use isDark from useTheme hook
 
   const regionStats = useMemo(() => {
     return cloudRegions.map((region) => {
       const regionLatencies = latencyData.filter(
         (data) => data.cloudRegionId === region.id
       );
-      
-      const avgLatency = regionLatencies.length > 0
-        ? Math.round(
-            regionLatencies.reduce((sum, data) => sum + data.latency, 0) /
-            regionLatencies.length
-          )
-        : 0;
-      
+
+      const avgLatency =
+        regionLatencies.length > 0
+          ? Math.round(
+              regionLatencies.reduce((sum, data) => sum + data.latency, 0) /
+                regionLatencies.length
+            )
+          : 0;
+
       const connections = regionLatencies.length;
-      const status = avgLatency < 100 ? "excellent" : avgLatency < 200 ? "good" : "poor";
-      
+      const status =
+        avgLatency < 100 ? "excellent" : avgLatency < 200 ? "good" : "poor";
+
       return {
         ...region,
         avgLatency,
@@ -59,21 +63,31 @@ const CloudRegionVisualization = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "excellent":
-        return "text-green-400";
+        return "text-green-500 dark:text-green-400";
       case "good":
-        return "text-yellow-400";
+        return "text-yellow-500 dark:text-yellow-400";
       case "poor":
-        return "text-red-400";
+        return "text-red-500 dark:text-red-400";
       default:
-        return "text-gray-400";
+        return "text-gray-500 dark:text-gray-400";
     }
   };
 
   return (
-    <Card className="bg-black/40 backdrop-blur-md border-slate-700/50">
+    <Card
+      className={`backdrop-blur-md transition-colors ${
+        isDark
+          ? "bg-black/40 border-slate-700/50"
+          : "bg-white/40 border-slate-300/50"
+      }`}
+    >
       <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2">
-          <Cloud className="w-5 h-5 text-blue-400" />
+        <CardTitle
+          className={`flex items-center gap-2 ${
+            isDark ? "text-white" : "text-slate-900"
+          }`}
+        >
+          <Cloud className="w-5 h-5 text-blue-500 dark:text-blue-400" />
           Cloud Regions
         </CardTitle>
       </CardHeader>
@@ -87,7 +101,11 @@ const CloudRegionVisualization = () => {
           >
             <Button
               variant={selectedCloudRegion === region.id ? "default" : "ghost"}
-              className="w-full p-3 h-auto justify-start bg-slate-800/50 hover:bg-slate-700/50"
+              className={`w-full p-3 h-auto justify-start transition-colors ${
+                isDark
+                  ? "bg-slate-800/50 hover:bg-slate-700/50"
+                  : "bg-slate-100/50 hover:bg-slate-200/50"
+              }`}
               onClick={() => setSelectedCloudRegion(region.id)}
             >
               <div className="flex items-center justify-between w-full">
@@ -98,10 +116,18 @@ const CloudRegionVisualization = () => {
                     )}`}
                   />
                   <div className="text-left">
-                    <div className="font-medium text-white text-sm">
+                    <div
+                      className={`font-medium text-sm ${
+                        isDark ? "text-white" : "text-slate-900"
+                      }`}
+                    >
                       {region.provider} {region.location}
                     </div>
-                    <div className="text-xs text-slate-400 flex items-center gap-1">
+                    <div
+                      className={`text-xs flex items-center gap-1 ${
+                        isDark ? "text-slate-400" : "text-slate-500"
+                      }`}
+                    >
                       <MapPin className="w-3 h-3" />
                       {region.regionCode}
                     </div>
@@ -120,7 +146,11 @@ const CloudRegionVisualization = () => {
                   >
                     {region.avgLatency}ms
                   </Badge>
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
+                  <div
+                    className={`flex items-center gap-1 text-xs ${
+                      isDark ? "text-slate-400" : "text-slate-500"
+                    }`}
+                  >
                     <Server className="w-3 h-3" />
                     {region.connections}
                   </div>
@@ -133,11 +163,21 @@ const CloudRegionVisualization = () => {
             </Button>
           </motion.div>
         ))}
-        
+
         {filteredRegions.length === 0 && (
           <div className="text-center py-4">
-            <div className="text-slate-400 text-sm">No regions found</div>
-            <div className="text-slate-500 text-xs mt-1">
+            <div
+              className={`text-sm ${
+                isDark ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              No regions found
+            </div>
+            <div
+              className={`text-xs mt-1 ${
+                isDark ? "text-slate-500" : "text-slate-500"
+              }`}
+            >
               Adjust your filters to see cloud regions
             </div>
           </div>

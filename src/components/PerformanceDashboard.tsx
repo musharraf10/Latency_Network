@@ -15,54 +15,72 @@ import {
   Minus,
   AlertTriangle,
 } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
 
 const PerformanceDashboard = () => {
   const { statistics, networkInfo, performanceMetrics, isConnected } =
     useRealTimeLatency();
+  const { isDark } = useTheme(); // Use isDark from useTheme hook
 
   const performanceScore = useMemo(() => {
     let score = 100;
-    
-    // Deduct points for high latency
+
     if (statistics.avgLatency > 150) score -= 30;
     else if (statistics.avgLatency > 100) score -= 15;
     else if (statistics.avgLatency > 50) score -= 5;
-    
-    // Deduct points for packet loss
+
     const packetLoss = parseFloat(statistics.avgPacketLoss);
     if (packetLoss > 3) score -= 25;
     else if (packetLoss > 1) score -= 10;
-    
-    // Deduct points for poor connection ratio
-    const connectionRatio = statistics.activeConnections / statistics.totalConnections;
+
+    const connectionRatio =
+      statistics.activeConnections / statistics.totalConnections;
     if (connectionRatio < 0.7) score -= 20;
     else if (connectionRatio < 0.9) score -= 10;
-    
+
     return Math.max(0, Math.min(100, score));
   }, [statistics]);
 
   const getPerformanceGrade = (score: number) => {
-    if (score >= 90) return { grade: "A+", color: "text-green-400" };
-    if (score >= 80) return { grade: "A", color: "text-green-400" };
-    if (score >= 70) return { grade: "B", color: "text-yellow-400" };
-    if (score >= 60) return { grade: "C", color: "text-orange-400" };
-    return { grade: "D", color: "text-red-400" };
+    if (score >= 90)
+      return { grade: "A+", color: "text-green-500 dark:text-green-400" };
+    if (score >= 80)
+      return { grade: "A", color: "text-green-500 dark:text-green-400" };
+    if (score >= 70)
+      return { grade: "B", color: "text-yellow-500 dark:text-yellow-400" };
+    if (score >= 60)
+      return { grade: "C", color: "text-orange-500 dark:text-orange-400" };
+    return { grade: "D", color: "text-red-500 dark:text-red-400" };
   };
 
   const getTrendIcon = (latency: number) => {
-    if (latency < 50) return { icon: TrendingUp, color: "text-green-400" };
-    if (latency < 150) return { icon: Minus, color: "text-yellow-400" };
-    return { icon: TrendingDown, color: "text-red-400" };
+    if (latency < 50)
+      return { icon: TrendingUp, color: "text-green-500 dark:text-green-400" };
+    if (latency < 150)
+      return { icon: Minus, color: "text-yellow-500 dark:text-yellow-400" };
+    return { icon: TrendingDown, color: "text-red-500 dark:text-red-400" };
   };
 
   const { grade, color } = getPerformanceGrade(performanceScore);
-  const { icon: TrendIcon, color: trendColor } = getTrendIcon(statistics.avgLatency);
+  const { icon: TrendIcon, color: trendColor } = getTrendIcon(
+    statistics.avgLatency
+  );
 
   return (
-    <Card className="bg-black/40 backdrop-blur-md border-slate-700/50">
+    <Card
+      className={`backdrop-blur-md transition-colors ${
+        isDark
+          ? "bg-black/40 border-slate-700/50"
+          : "bg-white/40 border-slate-300/50"
+      }`}
+    >
       <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-400" />
+        <CardTitle
+          className={`flex items-center gap-2 ${
+            isDark ? "text-white" : "text-slate-900"
+          }`}
+        >
+          <Activity className="w-5 h-5 text-cyan-400" />
           Performance Dashboard
         </CardTitle>
       </CardHeader>
@@ -83,7 +101,7 @@ const PerformanceDashboard = () => {
                 stroke="currentColor"
                 strokeWidth="8"
                 fill="transparent"
-                className="text-slate-700"
+                className={`${isDark ? "text-slate-700" : "text-slate-300"}`}
               />
               <motion.circle
                 cx="48"
@@ -93,10 +111,15 @@ const PerformanceDashboard = () => {
                 strokeWidth="8"
                 fill="transparent"
                 strokeDasharray={`${2 * Math.PI * 40}`}
-                strokeDashoffset={`${2 * Math.PI * 40 * (1 - performanceScore / 100)}`}
+                strokeDashoffset={`${
+                  2 * Math.PI * 40 * (1 - performanceScore / 100)
+                }`}
                 className={color}
                 initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
-                animate={{ strokeDashoffset: 2 * Math.PI * 40 * (1 - performanceScore / 100) }}
+                animate={{
+                  strokeDashoffset:
+                    2 * Math.PI * 40 * (1 - performanceScore / 100),
+                }}
                 transition={{ duration: 1, delay: 0.5 }}
               />
             </svg>
@@ -104,14 +127,26 @@ const PerformanceDashboard = () => {
               <span className={`text-2xl font-bold ${color}`}>{grade}</span>
             </div>
           </motion.div>
-          <div className="text-slate-300 text-sm">Performance Score</div>
-          <div className={`text-lg font-bold ${color}`}>{performanceScore}/100</div>
+          <div
+            className={`text-sm ${
+              isDark ? "text-slate-400" : "text-slate-600"
+            }`}
+          >
+            Performance Score
+          </div>
+          <div className={`text-lg font-bold ${color}`}>
+            {performanceScore}/100
+          </div>
         </div>
 
         {/* Key Metrics */}
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-slate-300 text-sm flex items-center gap-2">
+            <span
+              className={`text-sm flex items-center gap-2 ${
+                isDark ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
               <TrendIcon className={`w-4 h-4 ${trendColor}`} />
               Latency
             </span>
@@ -127,40 +162,55 @@ const PerformanceDashboard = () => {
               >
                 {statistics.avgLatency}ms
               </Badge>
-              <div className="text-xs text-slate-400 mt-1">
+              <div
+                className={`text-xs mt-1 ${
+                  isDark ? "text-slate-500" : "text-slate-500"
+                }`}
+              >
                 {statistics.minLatency}-{statistics.maxLatency}ms
               </div>
             </div>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-slate-300 text-sm flex items-center gap-2">
-              <Wifi className="w-4 h-4 text-blue-400" />
+            <span
+              className={`text-sm flex items-center gap-2 ${
+                isDark ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              <Wifi className="w-4 h-4 text-blue-500 dark:text-blue-400" />
               Connections
             </span>
             <div className="text-right">
-              <span className="text-green-400 font-mono">
+              <span className="text-green-500 dark:text-green-400 font-mono">
                 {statistics.activeConnections}/{statistics.totalConnections}
               </span>
               <Progress
-                value={(statistics.activeConnections / statistics.totalConnections) * 100}
+                value={
+                  (statistics.activeConnections / statistics.totalConnections) *
+                  100
+                }
                 className="w-16 h-2 mt-1"
               />
             </div>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-slate-300 text-sm flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-orange-400" />
+            <span
+              className={`text-sm flex items-center gap-2 ${
+                isDark ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              <AlertTriangle className="w-4 h-4 text-orange-500 dark:text-orange-400" />
               Packet Loss
             </span>
             <span
               className={`font-mono text-sm ${
                 parseFloat(statistics.avgPacketLoss) < 1
-                  ? "text-green-400"
+                  ? "text-green-500 dark:text-green-400"
                   : parseFloat(statistics.avgPacketLoss) < 3
-                  ? "text-yellow-400"
-                  : "text-red-400"
+                  ? "text-yellow-500 dark:text-yellow-400"
+                  : "text-red-500 dark:text-red-400"
               }`}
             >
               {statistics.avgPacketLoss}%
@@ -168,8 +218,12 @@ const PerformanceDashboard = () => {
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-slate-300 text-sm flex items-center gap-2">
-              <Zap className="w-4 h-4 text-cyan-400" />
+            <span
+              className={`text-sm flex items-center gap-2 ${
+                isDark ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              <Zap className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
               Status
             </span>
             <Badge variant={isConnected ? "default" : "destructive"}>
@@ -180,25 +234,53 @@ const PerformanceDashboard = () => {
 
         {/* Network Info */}
         {networkInfo && (
-          <div className="border-t border-slate-700 pt-3">
-            <h4 className="text-white font-medium mb-2 text-sm">Network Details</h4>
+          <div
+            className={`border-t pt-3 ${
+              isDark ? "border-slate-700" : "border-slate-300"
+            }`}
+          >
+            <h4
+              className={`font-medium mb-2 text-sm ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
+              Network Details
+            </h4>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-400">Connection</span>
-                <span className="text-slate-300">
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>
+                  Connection
+                </span>
+                <span className={isDark ? "text-slate-300" : "text-slate-600"}>
                   {networkInfo.effectiveType?.toUpperCase() || "Unknown"}
                 </span>
               </div>
               {networkInfo.downlink > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Downlink</span>
-                  <span className="text-slate-300">{networkInfo.downlink} Mbps</span>
+                  <span
+                    className={isDark ? "text-slate-400" : "text-slate-500"}
+                  >
+                    Downlink
+                  </span>
+                  <span
+                    className={isDark ? "text-slate-300" : "text-slate-600"}
+                  >
+                    {networkInfo.downlink} Mbps
+                  </span>
                 </div>
               )}
               {networkInfo.rtt > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400">RTT</span>
-                  <span className="text-slate-300">{networkInfo.rtt}ms</span>
+                  <span
+                    className={isDark ? "text-slate-400" : "text-slate-500"}
+                  >
+                    RTT
+                  </span>
+                  <span
+                    className={isDark ? "text-slate-300" : "text-slate-600"}
+                  >
+                    {networkInfo.rtt}ms
+                  </span>
                 </div>
               )}
             </div>
@@ -207,21 +289,43 @@ const PerformanceDashboard = () => {
 
         {/* Performance Metrics */}
         {performanceMetrics && (
-          <div className="border-t border-slate-700 pt-3">
-            <h4 className="text-white font-medium mb-2 text-sm">Page Performance</h4>
+          <div
+            className={`border-t pt-3 ${
+              isDark ? "border-slate-700" : "border-slate-300"
+            }`}
+          >
+            <h4
+              className={`font-medium mb-2 text-sm ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
+              Page Performance
+            </h4>
             <div className="space-y-2 text-xs">
               {performanceMetrics.firstContentfulPaint > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400">First Paint</span>
-                  <span className="text-slate-300">
+                  <span
+                    className={isDark ? "text-slate-400" : "text-slate-500"}
+                  >
+                    First Paint
+                  </span>
+                  <span
+                    className={isDark ? "text-slate-300" : "text-slate-600"}
+                  >
                     {Math.round(performanceMetrics.firstContentfulPaint)}ms
                   </span>
                 </div>
               )}
               {performanceMetrics.domContentLoaded > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400">DOM Ready</span>
-                  <span className="text-slate-300">
+                  <span
+                    className={isDark ? "text-slate-400" : "text-slate-500"}
+                  >
+                    DOM Ready
+                  </span>
+                  <span
+                    className={isDark ? "text-slate-300" : "text-slate-600"}
+                  >
                     {Math.round(performanceMetrics.domContentLoaded)}ms
                   </span>
                 </div>

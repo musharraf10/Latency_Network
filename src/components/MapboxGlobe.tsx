@@ -1,4 +1,3 @@
-// src/components/MapboxGlobe.tsx
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -6,8 +5,7 @@ import mapboxgl from "mapbox-gl";
 import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { exchanges, cloudRegions } from "@/data/mockData";
-import { useTheme } from "next-themes";
-import { Tooltip } from "recharts";
+import { useTheme } from "@/hooks/useTheme";
 import type { Feature, Geometry } from "geojson";
 
 // Set Mapbox access token
@@ -29,18 +27,16 @@ interface HeatmapProperties {
 }
 
 const MapboxGlobe = () => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const { isDark } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const animationFrameId = useRef<number | null>(null);
   const [tooltipData, setTooltipData] = useState<{
     exchangeName: string;
     regionName: string;
-    latency: number | null;
-    packetLoss: number | null;
+    latency: number | 0;
+    packetLoss: number | 0;
     x: number;
     y: number;
   } | null>(null);
@@ -67,12 +63,20 @@ const MapboxGlobe = () => {
     [filters.exchanges, filters.cloudProviders, filters.latencyRange]
   );
 
-  // Initialize Mapbox map
+  // Initialize and update map on theme change
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current) return;
 
-    console.log("Initializing map, isDark:", isDark);
+    console.log("Initializing/Reinitializing map, isDark:", isDark);
 
+    // Clean up existing map
+    if (map.current) {
+      console.log("Removing existing map instance");
+      map.current.remove();
+      map.current = null;
+    }
+
+    // Create new map instance
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: isDark
@@ -89,29 +93,20 @@ const MapboxGlobe = () => {
       if (!map.current) return;
 
       console.log(
-        "Initial style loaded, isStyleLoaded:",
-        map.current.isStyleLoaded()
+        "Map style loaded, applying fog settings for isDark:",
+        isDark
       );
 
-      if (isDark) {
-        map.current.setFog({
-          color: "rgb(100, 120, 150)",
-          "high-color": "rgb(20, 40, 80)",
-          "horizon-blend": 0.02,
-          "space-color": "rgb(5, 10, 20)",
-          "star-intensity": 0.8,
-        });
-      } else {
-        map.current.setFog({
-          color: "rgb(200, 220, 240)",
-          "high-color": "rgb(80, 120, 200)",
-          "horizon-blend": 0.02,
-          "space-color": "rgb(230, 240, 255)",
-          "star-intensity": 0.3,
-        });
-      }
+      map.current.setFog({
+        color: isDark ? "rgb(100, 120, 150)" : "rgb(200, 220, 240)",
+        "high-color": isDark ? "rgb(20, 40, 80)" : "rgb(80, 120, 200)",
+        "horizon-blend": 0.02,
+        "space-color": isDark ? "rgb(5, 10, 20)" : "rgb(230, 240, 255)",
+        "star-intensity": isDark ? 0.8 : 0.3,
+      });
 
-      setIsLoaded(true);
+      // Force a map render to ensure fog is applied
+      map.current.triggerRepaint();
     });
 
     let userInteracting = false;
@@ -147,6 +142,7 @@ const MapboxGlobe = () => {
     });
 
     return () => {
+      console.log("Cleaning up map instance");
       clearInterval(spinInterval);
       if (map.current) {
         map.current.remove();
@@ -155,58 +151,11 @@ const MapboxGlobe = () => {
     };
   }, [isDark]);
 
-  // Update map style when theme changes
-  useEffect(() => {
-    if (!map.current || resolvedTheme === undefined) return;
-
-    console.log(
-      "Theme useEffect triggered, isDark:",
-      isDark,
-      "resolvedTheme:",
-      resolvedTheme
-    );
-
-    setIsLoaded(false);
-    const newStyle = isDark
-      ? "mapbox://styles/mapbox/dark-v11"
-      : "mapbox://styles/mapbox/light-v11";
-    map.current.setStyle(newStyle);
-
-    map.current.once("style.load", () => {
-      if (!map.current) return;
-
-      console.log(
-        "Theme style loaded, isStyleLoaded:",
-        map.current.isStyleLoaded()
-      );
-
-      if (isDark) {
-        map.current.setFog({
-          color: "rgb(100, 120, 150)",
-          "high-color": "rgb(20, 40, 80)",
-          "horizon-blend": 0.02,
-          "space-color": "rgb(5, 10, 20)",
-          "star-intensity": 0.8,
-        });
-      } else {
-        map.current.setFog({
-          color: "rgb(200, 220, 240)",
-          "high-color": "rgb(80, 120, 200)",
-          "horizon-blend": 0.02,
-          "space-color": "rgb(230, 240, 255)",
-          "star-intensity": 0.3,
-        });
-      }
-
-      setIsLoaded(true);
-    });
-  }, [isDark, resolvedTheme]);
-
   // Add exchange markers
   useEffect(() => {
-    if (!map.current || !isLoaded || !map.current.isStyleLoaded()) return;
+    if (!map.current || !map.current.isStyleLoaded()) return;
 
-    console.log("Exchange markers useEffect triggered, isLoaded:", isLoaded);
+    console.log("Exchange markers useEffect triggered");
 
     Object.values(markersRef.current).forEach((marker) => {
       if (marker.getElement().classList.contains("exchange-marker")) {
@@ -260,33 +209,33 @@ const MapboxGlobe = () => {
       });
 
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-          <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
+        <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
         isDark ? "white" : "black"
       }; padding: 12px; border-radius: 8px; border: 1px solid ${
         isDark ? "#333" : "#ddd"
       };">
-            <h3 style="margin: 0 0 8px 0; color: #00FF88; font-size: 14px;">${
-              exchange.name
-            }</h3>
-            <p style="margin: 0; font-size: 12px; color: ${
-              isDark ? "#ccc" : "#666"
-            };">Region: ${exchange.region}</p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
-              isDark ? "#ccc" : "#666"
-            };">Status: <span style="color: #00FF88;">${
+          <h3 style="margin: 0 0 8px 0; color: #00FF88; font-size: 14px;">${
+            exchange.name
+          }</h3>
+          <p style="margin: 0; font-size: 12px; color: ${
+            isDark ? "#ccc" : "#666"
+          };">Region: ${exchange.region}</p>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
+            isDark ? "#ccc" : "#666"
+          };">Status: <span style="color: #00FF88;">${
         exchange.status
       }</span></p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
-              isDark ? "#ccc" : "#666"
-            };">Volume: $${(exchange.volume24h / 1000000000).toFixed(2)}B</p>
-          </div>
-        `);
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
+            isDark ? "#ccc" : "#666"
+          };">Volume: $${(exchange.volume24h / 1000000000).toFixed(2)}B</p>
+        </div>
+      `);
 
       marker.setPopup(popup);
       markersRef.current[`exchange-${exchange.id}`] = marker;
     });
   }, [
-    isLoaded,
+    isDark,
     memoizedFilters.exchanges,
     selectedExchange,
     setSelectedExchange,
@@ -294,9 +243,9 @@ const MapboxGlobe = () => {
 
   // Add cloud region markers
   useEffect(() => {
-    if (!map.current || !isLoaded || !map.current.isStyleLoaded()) return;
+    if (!map.current || !map.current.isStyleLoaded()) return;
 
-    console.log("Cloud markers useEffect triggered, isLoaded:", isLoaded);
+    console.log("Cloud markers useEffect triggered");
 
     Object.values(markersRef.current).forEach((marker) => {
       if (marker.getElement().classList.contains("cloud-marker")) {
@@ -350,40 +299,38 @@ const MapboxGlobe = () => {
       });
 
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-          <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
+        <div style="background: ${isDark ? "#1a1a1a" : "#ffffff"}; color: ${
         isDark ? "white" : "black"
       }; padding: 12px; border-radius: 8px; border: 1px solid ${
         isDark ? "#333" : "#ddd"
       };">
-            <h3 style="margin: 0 0 8px 0; color: ${color}; font-size: 14px;">${
+          <h3 style="margin: 0 0 8px 0; color: ${color}; font-size: 14px;">${
         region.provider
       } ${region.location}</h3>
-            <p style="margin: 0; font-size: 12px; color: ${
-              isDark ? "#ccc" : "#666"
-            };">Region: ${region.regionCode}</p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
-              isDark ? "#ccc" : "#666"
-            };">Zones: ${region.zones.join(", ")}</p>
-          </div>
-        `);
+          <p style="margin: 0; font-size: 12px; color: ${
+            isDark ? "#ccc" : "#666"
+          };">Region: ${region.regionCode}</p>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: ${
+            isDark ? "#ccc" : "#666"
+          };">Zones: ${region.zones.join(", ")}</p>
+        </div>
+      `);
 
       marker.setPopup(popup);
       markersRef.current[`cloud-${region.id}`] = marker;
     });
   }, [
-    isLoaded,
+    isDark,
     memoizedFilters.cloudProviders,
     selectedCloudRegion,
     setSelectedCloudRegion,
-    isDark,
   ]);
 
   // Add latency connections with animation and Tooltip
   useEffect(() => {
-    if (!map.current || !isLoaded || !realTimeEnabled) return;
+    if (!map.current || !realTimeEnabled) return;
 
     console.log("Latency useEffect triggered, dependencies:", {
-      isLoaded,
       latencyData: JSON.stringify(latencyData, null, 2),
       memoizedFilters: JSON.stringify(memoizedFilters, null, 2),
       realTimeEnabled,
@@ -396,11 +343,6 @@ const MapboxGlobe = () => {
         return;
       }
 
-      console.log(
-        "Adding latency layers, isStyleLoaded:",
-        map.current.isStyleLoaded()
-      );
-
       // Remove existing connection layers and source if they exist
       const layers = ["latency-connections", "latency-connections-glow"];
       layers.forEach((layer) => {
@@ -411,16 +353,6 @@ const MapboxGlobe = () => {
       if (map.current.getSource("latency-connections")) {
         map.current.removeSource("latency-connections");
       }
-
-      // Log all exchange and cloud region IDs for debugging
-      console.log(
-        "Available exchange IDs:",
-        exchanges.map((e) => e.id)
-      );
-      console.log(
-        "Available cloud region IDs:",
-        cloudRegions.map((r) => r.id)
-      );
 
       // Filter latency data with strict validation
       const filteredLatencyData = latencyData.filter((data) => {
@@ -602,15 +534,30 @@ const MapboxGlobe = () => {
         map.current.getCanvas().style.cursor = "pointer";
 
         // Convert lngLat to screen coordinates
-        const point = map.current.project(e.lngLat);
+        const point = map.current.project(e.lngLat!);
         setTooltipData({
           exchangeName: properties.exchangeName,
           regionName: properties.regionName,
           latency: properties.latency,
           packetLoss: properties.packetLoss,
-          x: point.x,
-          y: point.y - 50, // Offset above cursor
+          x: point.x + 10,
+          y: point.y - 60, // Offset above cursor
         });
+      });
+
+      map.current.on("mousemove", "latency-connections", (e) => {
+        if (!map.current || !tooltipData) return;
+
+        const point = map.current.project(e.lngLat!);
+        setTooltipData((prev) =>
+          prev
+            ? {
+                ...prev,
+                x: point.x + 10,
+                y: point.y - 60,
+              }
+            : null
+        );
       });
 
       map.current.on("mouseleave", "latency-connections", () => {
@@ -623,24 +570,18 @@ const MapboxGlobe = () => {
       });
     };
 
-    if (isLoaded && map.current.isStyleLoaded()) {
+    if (map.current.isStyleLoaded()) {
       addLatencyLayers();
     } else {
       console.warn("Deferring addLatencyLayers until style is loaded");
+      map.current.once("style.load", addLatencyLayers);
     }
-
-    const styleLoadListener = () => {
-      console.log("Style load listener triggered for latency layers");
-      addLatencyLayers();
-    };
-    map.current.on("style.load", styleLoadListener);
 
     return () => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
       if (map.current) {
-        map.current.off("style.load", styleLoadListener);
         const layers = ["latency-connections", "latency-connections-glow"];
         layers.forEach((layer) => {
           if (map.current!.getLayer(layer)) {
@@ -652,14 +593,13 @@ const MapboxGlobe = () => {
         }
       }
     };
-  }, [isLoaded, latencyData, memoizedFilters, realTimeEnabled, isDark]);
+  }, [isDark, latencyData, memoizedFilters, realTimeEnabled]);
 
   // Add heatmap layer
   useEffect(() => {
-    if (!map.current || !isLoaded) return;
+    if (!map.current) return;
 
     console.log("Heatmap useEffect triggered, dependencies:", {
-      isLoaded,
       showHeatmap,
       latencyData,
     });
@@ -766,21 +706,15 @@ const MapboxGlobe = () => {
       }
     };
 
-    if (isLoaded && map.current.isStyleLoaded()) {
+    if (map.current.isStyleLoaded()) {
       addHeatmapLayer();
     } else {
       console.warn("Deferring addHeatmapLayer until style is loaded");
+      map.current.once("style.load", addHeatmapLayer);
     }
-
-    const styleLoadListener = () => {
-      console.log("Style load listener triggered for heatmap layer");
-      addHeatmapLayer();
-    };
-    map.current.on("style.load", styleLoadListener);
 
     return () => {
       if (map.current) {
-        map.current.off("style.load", styleLoadListener);
         if (map.current.getLayer("latency-heatmap")) {
           map.current.removeLayer("latency-heatmap");
         }
@@ -789,7 +723,7 @@ const MapboxGlobe = () => {
         }
       }
     };
-  }, [isLoaded, showHeatmap, latencyData]);
+  }, [isDark, showHeatmap, latencyData]);
 
   return (
     <>
@@ -806,60 +740,49 @@ const MapboxGlobe = () => {
             top: tooltipData.y,
             zIndex: 10000,
             pointerEvents: "none",
+            transform: "translate(-50%, 0)",
           }}
         >
-          <Tooltip
-            isAnimationActive={false}
-            contentStyle={{
-              backgroundColor: isDark ? "#1E293B" : "#ffffff",
-              border: `1px solid ${isDark ? "#475569" : "#e2e8f0"}`,
-              borderRadius: "8px",
-              color: isDark ? "#F8FAFC" : "#1e293b",
-              padding: "8px",
-              fontSize: "12px",
-              maxWidth: "250px",
-              fontFamily: "Arial, sans-serif",
-            }}
-            formatter={(value: number, name: string) => [
-              `${value}${name === "latency" ? "ms" : "%"}`,
-              name === "latency" ? "Latency" : "Packet Loss",
-            ]}
-            labelFormatter={() =>
-              `${tooltipData.exchangeName} → ${tooltipData.regionName}`
-            }
-            payload={[
-              {
-                name: "latency",
-                value:
-                  tooltipData.latency != null
-                    ? Number(tooltipData.latency.toFixed(0))
-                    : undefined,
-                color:
-                  tooltipData.latency != null
-                    ? tooltipData.latency < 50
-                      ? "#00FF88"
-                      : tooltipData.latency < 150
-                      ? "#FFB800"
-                      : "#FF3366"
-                    : "#666",
-              },
-              {
-                name: "packetLoss",
-                value:
-                  tooltipData.packetLoss != null
-                    ? Number(tooltipData.packetLoss.toFixed(1))
-                    : undefined,
-                color:
-                  tooltipData.packetLoss != null
-                    ? tooltipData.packetLoss < 1
-                      ? "#00FF88"
-                      : tooltipData.packetLoss < 3
-                      ? "#FFB800"
-                      : "#FF3366"
-                    : "#666",
-              },
-            ]}
-          />
+          <div
+            className={`px-3 py-2 rounded-lg shadow-lg border text-xs font-medium ${
+              isDark
+                ? "bg-slate-800 border-slate-600 text-white"
+                : "bg-white border-slate-300 text-slate-900"
+            }`}
+            style={{ minWidth: "200px" }}
+          >
+            <div className="font-semibold mb-1 text-center">
+              {tooltipData.exchangeName} → {tooltipData.regionName}
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Latency:</span>
+              <span
+                className={
+                  tooltipData.latency < 50
+                    ? "text-green-500 dark:text-green-400"
+                    : tooltipData.latency < 150
+                    ? "text-yellow-500 dark:text-yellow-400"
+                    : "text-red-500 dark:text-red-400"
+                }
+              >
+                {tooltipData.latency}ms
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Packet Loss:</span>
+              <span
+                className={
+                  tooltipData.packetLoss < 1
+                    ? "text-green-500 dark:text-green-400"
+                    : tooltipData.packetLoss < 3
+                    ? "text-yellow-500 dark:text-yellow-400"
+                    : "text-red-500 dark:text-red-400"
+                }
+              >
+                {tooltipData.packetLoss.toFixed(1)}%
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -874,22 +797,6 @@ const MapboxGlobe = () => {
           100% {
             box-shadow: 0 0 0 0 transparent;
           }
-        }
-
-        .recharts-tooltip-wrapper {
-          z-index: 10000 !important;
-          pointer-events: none;
-        }
-
-        .recharts-default-tooltip {
-          background-color: ${isDark ? "#1E293B" : "#ffffff"} !important;
-          border: 1px solid ${isDark ? "#475569" : "#e2e8f0"} !important;
-          border-radius: 8px !important;
-          color: ${isDark ? "#F8FAFC" : "#1e293b"} !important;
-          padding: 8px !important;
-          font-size: 12px !important;
-          max-width: 250px !important;
-          font-family: Arial, sans-serif !important;
         }
       `}</style>
     </>
