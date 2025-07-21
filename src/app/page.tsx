@@ -3,20 +3,31 @@
 import { Suspense, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
+import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import LoadingScreen from "@/components/LoadingScreen";
 import ControlPanel from "@/components/ControlPanel";
 import HistoricalChart from "@/components/HistoricalChart";
-import MobileControls from "@/components/MobileControls";
+import MobileControlPanel from "@/components/MobileControlPanel";
 import CloudRegionVisualization from "@/components/CloudRegionVisualization";
 import PerformanceDashboard from "@/components/PerformanceDashboard";
 import NetworkTopology from "@/components/NetworkTopology";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useTheme } from "@/hooks/useTheme";
 import MapboxGlobe from "@/components/MapboxGlobe";
+import Legend from "@/components/Legend";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showMobileLegend, setShowMobileLegend] = useState(false);
   const { isDark } = useTheme();
 
   const handleLoadingComplete = () => {
@@ -53,8 +64,8 @@ export default function Home() {
         </Suspense>
       </div>
 
-      {/* Mobile Controls */}
-      <MobileControls />
+      {/* Mobile Control Panel */}
+      <MobileControlPanel />
 
       {/* Control Panel */}
       <div className="hidden md:block">
@@ -109,17 +120,138 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {/* Mobile Legend Dialog */}
+              <Dialog
+                open={showMobileLegend}
+                onOpenChange={setShowMobileLegend}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`lg:hidden h-8 w-8 md:h-10 md:w-10 transition-colors ${
+                      isDark
+                        ? "hover:bg-white/10 text-white"
+                        : "hover:bg-black/10 text-slate-900"
+                    }`}
+                  >
+                    <HelpCircle className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent
+                  className={`max-w-xs  transition-colors ${
+                    isDark
+                      ? "bg-slate-900 border-slate-700"
+                      : "bg-white border-slate-300"
+                  }`}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <h3
+                        className={`font-semibold mb-3 text-sm ${
+                          isDark ? "text-white" : "text-slate-900"
+                        }`}
+                      >
+                        Latency Legend
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full bg-green-400 flex-shrink-0"></div>
+                          <span
+                            className={`text-sm font-medium ${
+                              isDark ? "text-slate-300" : "text-slate-800"
+                            }`}
+                          >
+                            &lt; 50ms - Excellent
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full bg-amber-400 flex-shrink-0"></div>
+                          <span
+                            className={`text-sm font-medium ${
+                              isDark ? "text-slate-300" : "text-slate-800"
+                            }`}
+                          >
+                            50-150ms - Good
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full bg-red-400 flex-shrink-0"></div>
+                          <span
+                            className={`text-sm font-medium ${
+                              isDark ? "text-slate-300" : "text-slate-800"
+                            }`}
+                          >
+                            &gt; 150ms - Poor
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`pt-3 border-t ${
+                        isDark ? "border-slate-700" : "border-slate-300"
+                      }`}
+                    >
+                      <h4
+                        className={`font-medium mb-3 text-sm ${
+                          isDark ? "text-white" : "text-slate-900"
+                        }`}
+                      >
+                        Markers
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full bg-green-400 flex-shrink-0"></div>
+                          <span
+                            className={`text-sm font-medium ${
+                              isDark ? "text-slate-300" : "text-slate-800"
+                            }`}
+                          >
+                            Crypto Exchanges
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full bg-blue-400 flex-shrink-0"></div>
+                          <span
+                            className={`text-sm font-medium ${
+                              isDark ? "text-slate-300" : "text-slate-800"
+                            }`}
+                          >
+                            Cloud Regions
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`pt-3 border-t ${
+                        isDark ? "border-slate-700" : "border-slate-300"
+                      }`}
+                    >
+                      <div
+                        className={`text-sm font-medium ${
+                          isDark ? "text-slate-400" : "text-slate-700"
+                        }`}
+                      >
+                        Live network monitoring
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <ThemeToggle />
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className={`p-2 rounded-md transition-colors hidden lg:block ${
+                className={`p-2 rounded-md transition-colors hidden lg:block h-8 w-8 md:h-10 md:w-10 ${
                   isDark
                     ? "hover:bg-white/10 text-white"
                     : "hover:bg-black/10 text-slate-900"
                 }`}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 md:w-5 md:h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -138,99 +270,7 @@ export default function Home() {
       </motion.div>
 
       {/* Legend */}
-      <motion.div
-        className="absolute bottom-4 right-4 z-99 hidden lg:block max-w-[280px]"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-      >
-        <div
-          className={`backdrop-blur-md rounded-lg p-3 border transition-colors shadow-lg ${
-            isDark
-              ? "bg-black/40 border-slate-700/50 text-white"
-              : "bg-white/95 border-slate-300/50 text-slate-900"
-          }`}
-        >
-          <h3 className="font-semibold mb-2 text-sm">Latency Legend</h3>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-400"></div>
-              <span
-                className={`text-xs font-medium ${
-                  isDark ? "text-slate-300" : "text-slate-800"
-                }`}
-              >
-                &lt; 50ms - Excellent
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-              <span
-                className={`text-xs font-medium ${
-                  isDark ? "text-slate-300" : "text-slate-800"
-                }`}
-              >
-                50-150ms - Good
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-400"></div>
-              <span
-                className={`text-xs font-medium ${
-                  isDark ? "text-slate-300" : "text-slate-800"
-                }`}
-              >
-                {" "}
-                150ms - Poor
-              </span>
-            </div>
-          </div>
-
-          <div
-            className={`mt-3 pt-2 border-t ${
-              isDark ? "border-slate-700" : "border-slate-300"
-            }`}
-          >
-            <h4 className="font-medium mb-2 text-sm">Markers</h4>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                <span
-                  className={`text-xs font-medium ${
-                    isDark ? "text-slate-300" : "text-slate-800"
-                  }`}
-                >
-                  Crypto Exchanges
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-400"></div>
-                <span
-                  className={`text-xs font-medium ${
-                    isDark ? "text-slate-300" : "text-slate-800"
-                  }`}
-                >
-                  Cloud Regions
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`mt-2 pt-2 border-t ${
-              isDark ? "border-slate-700" : "border-slate-300"
-            }`}
-          >
-            <div
-              className={`text-xs font-medium ${
-                isDark ? "text-slate-400" : "text-slate-700"
-              }`}
-            >
-              <div>Live network monitoring</div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      <Legend />
     </div>
   );
 }

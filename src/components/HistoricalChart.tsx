@@ -1,12 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   LineChart,
@@ -21,7 +28,9 @@ import { useStore } from "@/hooks/useStore";
 import { useLatencyData } from "@/hooks/useLatencyData";
 import { exchanges } from "@/data/mockData";
 import { format } from "date-fns";
+import { useTheme } from "@/hooks/useTheme";
 
+// Interfaces remain the same
 interface Exchange {
   id: string;
   name: string;
@@ -39,15 +48,11 @@ interface StoreState {
   setShowHistorical: (value: boolean) => void;
 }
 
-interface LatencyData {
-  historicalData: HistoricalDataPoint[];
-  loadHistoricalData: (hours: number) => void;
-}
-
 const HistoricalChart = () => {
   const { selectedExchange, showHistorical, setShowHistorical } =
     useStore() as StoreState;
   const { historicalData, loadHistoricalData } = useLatencyData();
+  const { isDark } = useTheme();
 
   const exchange = useMemo(
     () => exchanges.find((e: Exchange) => e.id === selectedExchange),
@@ -85,54 +90,70 @@ const HistoricalChart = () => {
       open={showHistorical && !!selectedExchange}
       onOpenChange={setShowHistorical}
     >
-      <DialogContent className="max-w-6xl max-h-[90vh] bg-slate-900 border-slate-700">
+      <DialogContent
+        className={`max-w-7xl w-full max-h-[95vh] overflow-y-auto ${
+          isDark ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+        }`}
+      >
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center justify-between">
-            <span>
+          <div className="flex items-center justify-between">
+            <DialogTitle className={isDark ? "text-white" : "text-gray-800"}>
               Historical Latency - {exchange?.name ?? "Unknown Exchange"}
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadHistoricalData(1)}
-              >
-                1h
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadHistoricalData(24)}
-              >
-                24h
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadHistoricalData(168)}
-              >
-                7d
-              </Button>
-            </div>
-          </DialogTitle>
+            </DialogTitle>
+
+            {/* DropdownMenu implementation */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Filter className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => loadHistoricalData(1)}>
+                  1 Hour
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => loadHistoricalData(24)}>
+                  24 Hours
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => loadHistoricalData(168)}>
+                  7 Days
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => loadHistoricalData(720)}>
+                  30 Days
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-slate-800 rounded-lg p-4 text-center">
+          {/* Stats Cards remain the same */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              className={`rounded-lg p-4 text-center ${
+                isDark ? "bg-slate-800 text-white" : "bg-gray-100 text-gray-900"
+              }`}
+            >
               <div className="text-2xl font-bold text-green-400">
                 {avgLatency}ms
               </div>
               <div className="text-sm text-slate-400">Average</div>
             </div>
-            <div className="bg-slate-800 rounded-lg p-4 text-center">
+            <div
+              className={`rounded-lg p-4 text-center ${
+                isDark ? "bg-slate-800 text-white" : "bg-gray-100 text-gray-900"
+              }`}
+            >
               <div className="text-2xl font-bold text-red-400">
                 {maxLatency}ms
               </div>
               <div className="text-sm text-slate-400">Maximum</div>
             </div>
-            <div className="bg-slate-800 rounded-lg p-4 text-center">
+            <div
+              className={`rounded-lg p-4 text-center ${
+                isDark ? "bg-slate-800 text-white" : "bg-gray-100 text-gray-900"
+              }`}
+            >
               <div className="text-2xl font-bold text-blue-400">
                 {minLatency}ms
               </div>
@@ -140,41 +161,52 @@ const HistoricalChart = () => {
             </div>
           </div>
 
-          {/* Chart */}
+          {/* Chart remains the same */}
           <div
-            className="bg-slate-800 rounded-lg p-4"
-            style={{ height: "400px" }}
+            className={`rounded-lg p-4 ${
+              isDark ? "bg-slate-800" : "bg-gray-100"
+            }`}
+            style={{ height: "300px" }}
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="time" stroke="#94A3B8" fontSize={12} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? "#334155" : "#CBD5E1"}
+                />
+                <XAxis
+                  dataKey="time"
+                  stroke={isDark ? "#94A3B8" : "#475569"}
+                  fontSize={12}
+                />
                 <YAxis
-                  stroke="#94A3B8"
+                  stroke={isDark ? "#94A3B8" : "#475569"}
                   fontSize={12}
                   label={{
                     value: "Latency (ms)",
                     angle: -90,
                     position: "insideLeft",
+                    fill: isDark ? "#94A3B8" : "#475569", // ensure label color matches theme
                   }}
                 />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  stroke="#94A3B8"
+                  stroke={isDark ? "#94A3B8" : "#475569"}
                   fontSize={12}
                   label={{
                     value: "Packet Loss (%)",
                     angle: 90,
                     position: "insideRight",
+                    fill: isDark ? "#94A3B8" : "#475569", // ensure label color matches theme
                   }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#1E293B",
-                    border: "1px solid #475569",
+                    backgroundColor: isDark ? "#1E293B" : "#F1F5F9",
+                    border: `1px solid ${isDark ? "#475569" : "#CBD5E1"}`,
                     borderRadius: "8px",
-                    color: "#F8FAFC",
+                    color: isDark ? "#F8FAFC" : "#0F172A",
                   }}
                   formatter={(value: number, name: string) => [
                     `${value}${name === "latency" ? "ms" : "%"}`,

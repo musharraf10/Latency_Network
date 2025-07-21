@@ -63,6 +63,131 @@ const MapboxGlobe = () => {
     [filters.exchanges, filters.cloudProviders, filters.latencyRange]
   );
 
+  // Add cloud region boundaries
+  useEffect(() => {
+    if (!map.current || !map.current.isStyleLoaded()) return;
+
+    const addCloudRegionBoundaries = () => {
+      // Remove existing boundaries
+      const boundaryLayers = ['aws-boundaries', 'gcp-boundaries', 'azure-boundaries'];
+      boundaryLayers.forEach(layer => {
+        if (map.current!.getLayer(layer)) {
+          map.current!.removeLayer(layer);
+        }
+      });
+      
+      const boundarySources = ['aws-regions', 'gcp-regions', 'azure-regions'];
+      boundarySources.forEach(source => {
+        if (map.current!.getSource(source)) {
+          map.current!.removeSource(source);
+        }
+      });
+
+      // Group regions by provider
+      const regionsByProvider = {
+        AWS: cloudRegions.filter(r => r.provider === 'AWS'),
+        GCP: cloudRegions.filter(r => r.provider === 'GCP'),
+        Azure: cloudRegions.filter(r => r.provider === 'Azure')
+      };
+
+      // Create boundary polygons for each provider
+      Object.entries(regionsByProvider).forEach(([provider, regions]) => {
+        if (regions.length === 0) return;
+
+        // Create convex hull around regions
+        const coordinates = regions.map(r => [r.coordinates[1], r.coordinates[0]]);
+        
+        // Simple bounding box approach for demonstration
+        const lngs = coordinates.map(c => c[0]);
+        const lats = coordinates.map(c => c[1]);
+        const minLng = Math.min(...lngs) - 5;
+        const maxLng = Math.max(...lngs) + 5;
+        const minLat = Math.min(...lats) - 5;
+        const maxLat = Math.max(...lats) + 5;
+
+        const boundaryPolygon = [
+          [minLng, minLat],
+          [maxLng, minLat],
+          [maxLng, maxLat],
+          [minLng, maxLat],
+          [minLng, minLat]
+        ];
+
+        const sourceId = `${provider.toLowerCase()}-regions`;
+        const layerId = `${provider.toLowerCase()}-boundaries`;
+
+        // Add source
+        map.current!.addSource(sourceId, {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: { provider },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [boundaryPolygon]
+            }
+          }
+        });
+
+        // Add boundary layer
+        const colors = {
+          AWS: '#FF9500',
+          GCP: '#4285F4',
+          Azure: '#00D4FF'
+        };
+
+        map.current!.addLayer({
+          id: layerId,
+          type: 'line',
+          source: sourceId,
+          paint: {
+            'line-color': colors[provider as keyof typeof colors],
+            'line-width': 2,
+            'line-opacity': 0.6,
+            'line-dasharray': [2, 2]
+          }
+        });
+
+        // Add fill layer for subtle background
+        map.current!.addLayer({
+          id: `${layerId}-fill`,
+          type: 'fill',
+          source: sourceId,
+          paint: {
+            'fill-color': colors[provider as keyof typeof colors],
+            'fill-opacity': 0.1
+          }
+        }, layerId);
+      });
+    };
+
+    if (map.current.isStyleLoaded()) {
+      addCloudRegionBoundaries();
+    } else {
+      map.current.once('style.load', addCloudRegionBoundaries);
+    }
+
+    return () => {
+      if (map.current) {
+        const allLayers = ['aws-boundaries', 'gcp-boundaries', 'azure-boundaries', 
+                          'aws-boundaries-fill', 'gcp-boundaries-fill', 'azure-boundaries-fill'];
+        const allSources = ['aws-regions', 'gcp-regions', 'azure-regions'];
+        
+        allLayers.forEach(layer => {
+          if (map.current!.getLayer(layer)) {
+            map.current!.removeLayer(layer);
+          }
+        });
+        
+        allSources.forEach(source => {
+          if (map.current!.getSource(source)) {
+            map.current!.removeSource(source);
+          }
+        });
+      }
+    };
+  }, [isDark, memoizedFilters.cloudProviders]);
+
   // Initialize and update map on theme change
   useEffect(() => {
     if (!mapContainer.current) return;
