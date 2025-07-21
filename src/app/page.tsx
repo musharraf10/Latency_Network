@@ -1,17 +1,10 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { Suspense, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import LoadingScreen from "@/components/LoadingScreen";
 import ControlPanel from "@/components/ControlPanel";
 import HistoricalChart from "@/components/HistoricalChart";
