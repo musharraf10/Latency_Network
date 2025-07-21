@@ -63,6 +63,8 @@ const MapboxGlobe = () => {
     [filters.exchanges, filters.cloudProviders, filters.latencyRange]
   );
 
+  // Memoize showHeatmap to prevent unnecessary re-renders
+  const memoizedShowHeatmap = useMemo(() => showHeatmap, [showHeatmap]);
   // Add cloud region boundaries
   useEffect(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
@@ -725,7 +727,7 @@ const MapboxGlobe = () => {
     if (!map.current) return;
 
     console.log("Heatmap useEffect triggered, dependencies:", {
-      showHeatmap,
+      showHeatmap: memoizedShowHeatmap,
       latencyData,
     });
 
@@ -736,7 +738,9 @@ const MapboxGlobe = () => {
       }
 
       console.log(
-        "Adding heatmap layer, isStyleLoaded:",
+        "Adding heatmap layer, showHeatmap:",
+        memoizedShowHeatmap,
+        "isStyleLoaded:",
         map.current.isStyleLoaded()
       );
 
@@ -747,7 +751,7 @@ const MapboxGlobe = () => {
         map.current.removeSource("latency-heatmap");
       }
 
-      if (showHeatmap) {
+      if (memoizedShowHeatmap && latencyData.length > 0) {
         const heatmapPoints: Feature<Geometry, HeatmapProperties>[] =
           latencyData
             .map((data) => {
@@ -778,6 +782,8 @@ const MapboxGlobe = () => {
             );
 
         if (heatmapPoints.length > 0) {
+          console.log("Creating heatmap with", heatmapPoints.length, "points");
+          
           map.current.addSource("latency-heatmap", {
             type: "geojson",
             data: {
@@ -827,7 +833,11 @@ const MapboxGlobe = () => {
               "heatmap-opacity": 0.8,
             },
           });
+        } else {
+          console.warn("No heatmap points to display");
         }
+      } else {
+        console.log("Heatmap disabled or no data available");
       }
     };
 
@@ -848,7 +858,7 @@ const MapboxGlobe = () => {
         }
       }
     };
-  }, [isDark, showHeatmap, latencyData]);
+  }, [isDark, memoizedShowHeatmap, latencyData]);
 
   return (
     <>
