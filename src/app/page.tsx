@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LoadingScreen from "@/components/LoadingScreen";
 import ControlPanel from "@/components/ControlPanel";
 import HistoricalChart from "@/components/HistoricalChart";
-import MobileControls from "@/components/MobileControls";
+import MobileControlPanel from "@/components/MobileControlPanel";
 import CloudRegionVisualization from "@/components/CloudRegionVisualization";
 import PerformanceDashboard from "@/components/PerformanceDashboard";
 import NetworkTopology from "@/components/NetworkTopology";
@@ -53,8 +53,8 @@ export default function Home() {
         </Suspense>
       </div>
 
-      {/* Mobile Controls */}
-      <MobileControls />
+      {/* Mobile Control Panel */}
+      <MobileControlPanel />
 
       {/* Control Panel */}
       <div className="hidden md:block">
