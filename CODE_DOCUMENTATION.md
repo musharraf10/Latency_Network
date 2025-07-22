@@ -18,6 +18,7 @@
 ## Project Architecture
 
 ### Directory Structure
+
 ```
 src/
 ├── app/                    # Next.js App Router
@@ -37,6 +38,7 @@ src/
 ```
 
 ### Design Patterns Used
+
 - **Singleton Pattern**: LatencyMonitor for global instance management
 - **Observer Pattern**: Real-time data subscription system
 - **Component Composition**: Reusable UI components with Radix UI
@@ -56,12 +58,14 @@ const MapboxGlobe = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
-  
+
   // Initialize map with globe projection
   useEffect(() => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/light-v11",
+      style: isDark
+        ? "mapbox://styles/mapbox/dark-v11"
+        : "mapbox://styles/mapbox/light-v11",
       projection: { name: "globe" },
       center: [0, 20],
       zoom: 1.5,
@@ -71,6 +75,7 @@ const MapboxGlobe = () => {
 ```
 
 **Key Features**:
+
 - **3D Globe Projection**: Uses Mapbox's globe projection for realistic Earth visualization
 - **Real-time Latency Lines**: Animated connections between exchanges and cloud regions
 - **Interactive Markers**: Clickable exchange and cloud region markers
@@ -79,6 +84,7 @@ const MapboxGlobe = () => {
 - **Theme Support**: Automatic style switching for dark/light modes
 
 **Performance Optimizations**:
+
 - Marker reuse and cleanup
 - Efficient GeoJSON updates
 - Animation frame management
@@ -92,7 +98,9 @@ const MapboxGlobe = () => {
 const MobileControlPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"control" | "advanced">("control");
-  const [advancedSubTab, setAdvancedSubTab] = useState<"regions" | "performance" | "topology">("regions");
+  const [advancedSubTab, setAdvancedSubTab] = useState<
+    "regions" | "performance" | "topology"
+  >("regions");
 
   const handleDrag = (event: any, info: PanInfo) => {
     setDragY(info.offset.y);
@@ -109,6 +117,7 @@ const MobileControlPanel = () => {
 ```
 
 **Key Features**:
+
 - **Swipe Gestures**: Natural iOS-style drag interactions
 - **Two-Level Navigation**: Main tabs with sub-navigation
 - **Quick Stats**: Always-visible key metrics when collapsed
@@ -116,6 +125,7 @@ const MobileControlPanel = () => {
 - **Spring Animations**: Physics-based motion with Framer Motion
 
 **UI Structure**:
+
 1. **Control Panel Tab**: Network status, search, filters, controls
 2. **Advanced Panel Tab**: Cloud regions, performance, network topology
 3. **Quick Stats Bar**: Persistent metrics display
@@ -140,6 +150,7 @@ const HistoricalChart = () => {
 ```
 
 **Key Features**:
+
 - **Cryptocurrency Selection**: 6 popular cryptocurrencies with distinct colors
 - **Time Range Filtering**: 1h, 24h, 7d, 30d options
 - **Interactive Charts**: Recharts with hover tooltips
@@ -147,6 +158,7 @@ const HistoricalChart = () => {
 - **Responsive Design**: Adapts to all screen sizes
 
 **Chart Configuration**:
+
 - **Line Charts**: Dual Y-axis for latency and packet loss
 - **Color Coding**: Green for latency, red for packet loss
 - **Smooth Animations**: Transition effects for data updates
@@ -165,7 +177,7 @@ const NetworkTopology = () => {
     return latencyData.map((data) => {
       const exchange = exchanges.find((e) => e.id === data.exchangeId);
       const region = cloudRegions.find((r) => r.id === data.cloudRegionId);
-      
+
       return {
         id: `${data.exchangeId}-${data.cloudRegionId}`,
         exchangeName: exchange.name,
@@ -173,7 +185,9 @@ const NetworkTopology = () => {
         latency: data.latency,
         packetLoss: data.packetLoss,
         hops: Math.floor(Math.random() * 8) + 3,
-        bandwidth: ["1 Gbps", "10 Gbps", "100 Gbps"][Math.floor(Math.random() * 3)],
+        bandwidth: ["1 Gbps", "10 Gbps", "100 Gbps"][
+          Math.floor(Math.random() * 3)
+        ],
       };
     });
   }, [latencyData, selectedExchange, selectedCloudRegion]);
@@ -181,6 +195,7 @@ const NetworkTopology = () => {
 ```
 
 **Key Features**:
+
 - **Real-time Search**: Live filtering of exchanges and regions
 - **Network Path Visualization**: Simulated network hops and bandwidth
 - **Connection Details**: Latency, packet loss, and performance metrics
@@ -213,16 +228,24 @@ export const useRealTimeLatency = () => {
     initializeMonitor();
   }, []);
 
-  const statistics = useMemo(() => ({
-    avgLatency: Math.round(latencyData.reduce((sum, data) => sum + data.latency, 0) / latencyData.length),
-    minLatency: Math.min(...latencyData.map((data) => data.latency)),
-    maxLatency: Math.max(...latencyData.map((data) => data.latency)),
-    activeConnections: latencyData.filter((data) => data.latency < 200).length,
-  }), [latencyData]);
+  const statistics = useMemo(
+    () => ({
+      avgLatency: Math.round(
+        latencyData.reduce((sum, data) => sum + data.latency, 0) /
+          latencyData.length
+      ),
+      minLatency: Math.min(...latencyData.map((data) => data.latency)),
+      maxLatency: Math.max(...latencyData.map((data) => data.latency)),
+      activeConnections: latencyData.filter((data) => data.latency < 200)
+        .length,
+    }),
+    [latencyData]
+  );
 };
 ```
 
 **Key Features**:
+
 - **Real-time Monitoring**: 5-second interval updates
 - **Network Information**: Browser connection details
 - **Performance Metrics**: Page load and paint timing
@@ -249,11 +272,13 @@ export const useStore = create<AppState>((set) => ({
   // Actions
   setSelectedExchange: (id) => set({ selectedExchange: id }),
   setSelectedCloudRegion: (id) => set({ selectedCloudRegion: id }),
-  setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
+  setFilters: (filters) =>
+    set((state) => ({ filters: { ...state.filters, ...filters } })),
 }));
 ```
 
 **State Structure**:
+
 - **Selection State**: Currently selected exchange and cloud region
 - **Filter State**: Active filters for exchanges, providers, and latency range
 - **UI State**: Modal visibility and feature toggles
@@ -280,6 +305,7 @@ export const useTheme = () => {
 ```
 
 **Features**:
+
 - **System Preference**: Automatic detection of OS theme
 - **Hydration Safety**: Prevents SSR mismatch issues
 - **Theme Persistence**: Automatic storage in localStorage
@@ -326,6 +352,7 @@ export class LatencyMonitor {
 ```
 
 **Key Features**:
+
 - **Singleton Pattern**: Global instance management
 - **Observer Pattern**: Subscription-based data updates
 - **Real Network Requests**: Actual latency measurement to exchange APIs
@@ -339,7 +366,8 @@ export class LatencyMonitor {
 ```typescript
 export class NetworkPerformanceMonitor {
   static async getNetworkInfo() {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection;
+    const connection =
+      (navigator as any).connection || (navigator as any).mozConnection;
     return {
       effectiveType: connection?.effectiveType || "unknown",
       downlink: connection?.downlink || 0,
@@ -350,17 +378,25 @@ export class NetworkPerformanceMonitor {
   }
 
   static async measurePageLoadPerformance() {
-    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+    const navigation = performance.getEntriesByType(
+      "navigation"
+    )[0] as PerformanceNavigationTiming;
     return {
-      domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+      domContentLoaded:
+        navigation.domContentLoadedEventEnd -
+        navigation.domContentLoadedEventStart,
       loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
-      firstPaint: performance.getEntriesByType("paint").find(entry => entry.name === "first-paint")?.startTime || 0,
+      firstPaint:
+        performance
+          .getEntriesByType("paint")
+          .find((entry) => entry.name === "first-paint")?.startTime || 0,
     };
   }
 }
 ```
 
 **Metrics Collected**:
+
 - **Connection Type**: 2G, 3G, 4G, WiFi detection
 - **Bandwidth**: Download speed estimation
 - **Round Trip Time**: Network latency to ISP
@@ -377,34 +413,44 @@ export class NetworkPerformanceMonitor {
 
 ```typescript
 // Haversine formula for distance calculation
-const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+const getDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
 
 export const generateMockLatencyData = (): LatencyData[] => {
   const data: LatencyData[] = [];
-  
+
   exchanges.forEach((exchange) => {
     cloudRegions.forEach((region) => {
       const distance = getDistance(
-        exchange.coordinates[0], exchange.coordinates[1],
-        region.coordinates[0], region.coordinates[1]
+        exchange.coordinates[0],
+        exchange.coordinates[1],
+        region.coordinates[0],
+        region.coordinates[1]
       );
-      
+
       // Base latency: 0.1ms per km (fiber-optic networks)
       const baseLatency = distance * 0.1;
       const variation = (Math.random() - 0.5) * 20;
       const latency = Math.max(1, Math.round(baseLatency + variation));
-      
+
       data.push({
         exchangeId: exchange.id,
         cloudRegionId: region.id,
@@ -414,12 +460,13 @@ export const generateMockLatencyData = (): LatencyData[] => {
       });
     });
   });
-  
+
   return data;
 };
 ```
 
 **Data Generation Features**:
+
 - **Geographic Accuracy**: Real coordinates for exchanges and cloud regions
 - **Realistic Latency**: Distance-based calculations using Haversine formula
 - **Network Variation**: Random variations to simulate real network conditions
@@ -427,12 +474,14 @@ export const generateMockLatencyData = (): LatencyData[] => {
 - **Historical Data**: Time-series generation for charts
 
 **Exchange Data**:
+
 - **Global Coverage**: 9 major exchanges across different regions
 - **Real Locations**: Actual geographic coordinates
 - **Volume Data**: Realistic 24h trading volumes
 - **Status Monitoring**: Online/offline/degraded states
 
 **Cloud Region Data**:
+
 - **Multi-Provider**: AWS, GCP, and Azure regions
 - **Availability Zones**: Realistic zone configurations
 - **Geographic Distribution**: Global coverage with regional clustering
@@ -445,37 +494,37 @@ export const generateMockLatencyData = (): LatencyData[] => {
 
 ```typescript
 export interface Exchange {
-  id: string;                    // Unique identifier
-  name: string;                  // Display name
+  id: string; // Unique identifier
+  name: string; // Display name
   coordinates: [number, number]; // [latitude, longitude]
-  region: string;                // Geographic region
-  volume24h: number;             // 24-hour trading volume
+  region: string; // Geographic region
+  volume24h: number; // 24-hour trading volume
   status: "online" | "offline" | "degraded";
 }
 
 export interface CloudRegion {
-  id: string;                    // Unique identifier
+  id: string; // Unique identifier
   provider: "AWS" | "GCP" | "Azure";
-  regionCode: string;            // Provider-specific region code
-  location: string;              // Human-readable location
+  regionCode: string; // Provider-specific region code
+  location: string; // Human-readable location
   coordinates: [number, number]; // [latitude, longitude]
-  zones: string[];               // Availability zones
+  zones: string[]; // Availability zones
 }
 
 export interface LatencyData {
-  exchangeId: string;            // Reference to exchange
-  cloudRegionId: string;         // Reference to cloud region
-  latency: number;               // Milliseconds
-  timestamp: number;             // Unix timestamp
-  packetLoss: number;            // Percentage (0-100)
+  exchangeId: string; // Reference to exchange
+  cloudRegionId: string; // Reference to cloud region
+  latency: number; // Milliseconds
+  timestamp: number; // Unix timestamp
+  packetLoss: number; // Percentage (0-100)
 }
 
 export interface HistoricalData {
-  exchangeId?: string;           // Optional exchange filter
-  cloudRegionId?: string;        // Optional region filter
-  timestamp: number;             // Unix timestamp
-  latency: number;               // Milliseconds
-  packetLoss: number;            // Percentage
+  exchangeId?: string; // Optional exchange filter
+  cloudRegionId?: string; // Optional region filter
+  timestamp: number; // Unix timestamp
+  latency: number; // Milliseconds
+  packetLoss: number; // Percentage
 }
 ```
 
@@ -486,20 +535,20 @@ export interface AppState {
   // Selection state
   selectedExchange: string | null;
   selectedCloudRegion: string | null;
-  
+
   // Filter state
   filters: {
-    exchanges: string[];                           // Selected exchange IDs
-    cloudProviders: ("AWS" | "GCP" | "Azure")[];  // Selected providers
-    latencyRange: [number, number];                // Min/max latency filter
+    exchanges: string[]; // Selected exchange IDs
+    cloudProviders: ("AWS" | "GCP" | "Azure")[]; // Selected providers
+    latencyRange: [number, number]; // Min/max latency filter
   };
-  
+
   // UI state
-  realTimeEnabled: boolean;      // Real-time updates toggle
-  showHistorical: boolean;       // Historical chart visibility
-  showHeatmap: boolean;          // Heatmap layer visibility
-  darkMode: boolean;             // Theme preference
-  
+  realTimeEnabled: boolean; // Real-time updates toggle
+  showHistorical: boolean; // Historical chart visibility
+  showHeatmap: boolean; // Heatmap layer visibility
+  darkMode: boolean; // Theme preference
+
   // Actions (Zustand pattern)
   setSelectedExchange: (id: string | null) => void;
   setSelectedCloudRegion: (id: string | null) => void;
@@ -569,15 +618,16 @@ export const springConfig = {
 const useStore = create<AppState>((set, get) => ({
   // Initial state
   selectedExchange: null,
-  
+
   // Actions with proper typing
   setSelectedExchange: (id) => set({ selectedExchange: id }),
-  
+
   // Complex state updates
-  setFilters: (newFilters) => set((state) => ({
-    filters: { ...state.filters, ...newFilters }
-  })),
-  
+  setFilters: (newFilters) =>
+    set((state) => ({
+      filters: { ...state.filters, ...newFilters },
+    })),
+
   // Computed values (using get)
   getFilteredData: () => {
     const state = get();
@@ -587,6 +637,7 @@ const useStore = create<AppState>((set, get) => ({
 ```
 
 **Benefits**:
+
 - **TypeScript Integration**: Full type safety
 - **Minimal Boilerplate**: Less code than Redux
 - **DevTools Support**: Redux DevTools integration
@@ -622,10 +673,13 @@ const ExpensiveComponent = React.memo(({ data }) => {
 
 // Callback memoization
 const useOptimizedCallback = () => {
-  const expensiveCallback = useCallback((data) => {
-    // expensive operation
-  }, [dependency]);
-  
+  const expensiveCallback = useCallback(
+    (data) => {
+      // expensive operation
+    },
+    [dependency]
+  );
+
   return expensiveCallback;
 };
 
@@ -634,7 +688,7 @@ const useMemoizedValue = (data) => {
   const processedData = useMemo(() => {
     return data.map(/* expensive processing */);
   }, [data]);
-  
+
   return processedData;
 };
 ```
@@ -645,21 +699,21 @@ const useMemoizedValue = (data) => {
 // Efficient marker management
 const useMarkerOptimization = () => {
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
-  
+
   const updateMarkers = useCallback((newData) => {
     // Reuse existing markers
     const existingMarkers = markersRef.current;
-    
+
     // Remove unused markers
     existingMarkers.forEach((marker, id) => {
-      if (!newData.find(item => item.id === id)) {
+      if (!newData.find((item) => item.id === id)) {
         marker.remove();
         existingMarkers.delete(id);
       }
     });
-    
+
     // Add new markers
-    newData.forEach(item => {
+    newData.forEach((item) => {
       if (!existingMarkers.has(item.id)) {
         const marker = new mapboxgl.Marker()
           .setLngLat(item.coordinates)
@@ -677,14 +731,14 @@ const useMarkerOptimization = () => {
 // Efficient animation cleanup
 useEffect(() => {
   let animationId: number;
-  
+
   const animate = () => {
     // Animation logic
     animationId = requestAnimationFrame(animate);
   };
-  
+
   animate();
-  
+
   return () => {
     if (animationId) {
       cancelAnimationFrame(animationId);
@@ -704,26 +758,26 @@ useEffect(() => {
 const useApiWithErrorHandling = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const fetchData = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const data = await api.fetchData();
       return data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
       setError(errorMessage);
       toast.error(`Failed to fetch data: ${errorMessage}`);
-      
+
       // Fallback to cached or mock data
       return getFallbackData();
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return { fetchData, error, isLoading };
 };
 ```
@@ -737,16 +791,16 @@ class ComponentErrorBoundary extends React.Component {
     super(props);
     this.state = { hasError: false, error: null };
   }
-  
+
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
-  
+
   componentDidCatch(error, errorInfo) {
-    console.error('Component error:', error, errorInfo);
+    console.error("Component error:", error, errorInfo);
     // Log to error reporting service
   }
-  
+
   render() {
     if (this.state.hasError) {
       return (
@@ -758,7 +812,7 @@ class ComponentErrorBoundary extends React.Component {
         </div>
       );
     }
-    
+
     return this.props.children;
   }
 }
@@ -771,23 +825,23 @@ class ComponentErrorBoundary extends React.Component {
 const useRetryableRequest = () => {
   const retryRequest = async (fn, maxRetries = 3) => {
     let lastError;
-    
+
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await fn();
       } catch (error) {
         lastError = error;
-        
+
         if (i < maxRetries - 1) {
           const delay = Math.pow(2, i) * 1000; // Exponential backoff
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
-    
+
     throw lastError;
   };
-  
+
   return { retryRequest };
 };
 ```
@@ -800,13 +854,13 @@ const useRetryableRequest = () => {
 
 ```typescript
 // Example test structure for components
-describe('MapboxGlobe', () => {
-  it('should render globe with markers', () => {
+describe("MapboxGlobe", () => {
+  it("should render globe with markers", () => {
     render(<MapboxGlobe />);
     // Test marker rendering
   });
-  
-  it('should handle theme changes', () => {
+
+  it("should handle theme changes", () => {
     const { rerender } = render(<MapboxGlobe theme="dark" />);
     rerender(<MapboxGlobe theme="light" />);
     // Test theme switching
@@ -818,14 +872,16 @@ describe('MapboxGlobe', () => {
 
 ```typescript
 // Testing custom hooks
-describe('useRealTimeLatency', () => {
-  it('should initialize with default values', () => {
+describe("useRealTimeLatency", () => {
+  it("should initialize with default values", () => {
     const { result } = renderHook(() => useRealTimeLatency());
     expect(result.current.isLoading).toBe(true);
   });
-  
-  it('should update latency data', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useRealTimeLatency());
+
+  it("should update latency data", async () => {
+    const { result, waitForNextUpdate } = renderHook(() =>
+      useRealTimeLatency()
+    );
     await waitForNextUpdate();
     expect(result.current.latencyData).toBeDefined();
   });
@@ -842,15 +898,15 @@ describe('useRealTimeLatency', () => {
 // Secure API configuration
 const secureApiConfig = {
   // CORS configuration
-  mode: 'cors' as RequestMode,
-  credentials: 'same-origin' as RequestCredentials,
-  
+  mode: "cors" as RequestMode,
+  credentials: "same-origin" as RequestCredentials,
+
   // Headers
   headers: {
-    'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
+    "Content-Type": "application/json",
+    "X-Requested-With": "XMLHttpRequest",
   },
-  
+
   // Timeout
   signal: AbortSignal.timeout(10000),
 };
@@ -862,13 +918,13 @@ const secureApiConfig = {
 // Input sanitization and validation
 const validateInput = (input: string): string => {
   // Remove potentially dangerous characters
-  const sanitized = input.replace(/[<>\"']/g, '');
-  
+  const sanitized = input.replace(/[<>\"']/g, "");
+
   // Validate length
   if (sanitized.length > 100) {
-    throw new Error('Input too long');
+    throw new Error("Input too long");
   }
-  
+
   return sanitized;
 };
 ```
