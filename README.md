@@ -4,7 +4,7 @@ Application that displays a 3D world map visualizing exchange server locations a
 
 ![Latency Topology Visualizer](https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&h=600&fit=crop)
 
-## 🚀 Features
+## Features
 
 ### 3D World Map Visualization
 
@@ -119,11 +119,11 @@ Application that displays a 3D world map visualizing exchange server locations a
 - **PostCSS**: CSS processing
 - **Autoprefixer**: CSS vendor prefixing
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
-- Node.js 18.0 or higher
+- Node.js 18.0 above version
 - npm package manager
 - Mapbox account and access token
 
@@ -133,7 +133,6 @@ Application that displays a 3D world map visualizing exchange server locations a
 
 ```bash
 git clone https://github.com/musharraf10/Latency_Network.git
-cd folder
 ```
 
 2. Install dependencies:
@@ -290,7 +289,7 @@ interface AppState {
 
 ## 📚 Code Documentation
 
-### Core Components
+### Core Components (Code Snippet's)
 
 #### MapboxGlobe.tsx
 
@@ -325,7 +324,7 @@ const MapboxGlobe = () => {
     });
   }, [isDark]);
 
-  // Add exchange markers with interactive popups
+  // Exchange markers with interactive popups
   const addExchangeMarkers = () => {
     exchanges.forEach((exchange) => {
       const marker = new mapboxgl.Marker(element)
@@ -334,11 +333,11 @@ const MapboxGlobe = () => {
     });
   };
 
-  // Add latency connections with animated lines
+  // Latency connections with animated lines
   const addLatencyConnections = () => {
-    // Create GeoJSON features for connections
-    // Add animated dashed lines
-    // Handle hover interactions for tooltips
+    // GeoJSON features for connections
+    // Animated dashed lines
+    // Handling hover interactions for tooltips
   };
 };
 ```
@@ -358,7 +357,7 @@ const MobileControlPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"control" | "advanced">("control");
 
-  // Handle drag gestures
+  // This handle drag gestures
   const handleDrag = (event: any, info: PanInfo) => {
     setDragY(info.offset.y);
   };
@@ -400,7 +399,7 @@ const HistoricalChart = () => {
   const [selectedCrypto, setSelectedCrypto] = useState("bitcoin");
   const [timeRange, setTimeRange] = useState(24);
 
-  // Generate chart data based on selections
+  // This code generate chart data based on selections
   const chartData = useMemo(() => {
     return historicalData.map((data) => ({
       time: format(new Date(data.timestamp), "HH:mm"),
@@ -470,7 +469,7 @@ export const useRealTimeLatency = () => {
     initializeMonitor();
   }, []);
 
-  // Calculate statistics
+  // Calculating statistics
   const statistics = useMemo(
     () => ({
       avgLatency: Math.round(
@@ -557,7 +556,7 @@ export class LatencyMonitor {
     return LatencyMonitor.instance;
   }
 
-  // Measure latency to external endpoints
+  // Measuring the latency to external endpoints
   private async measureLatency(url: string): Promise<number> {
     const start = performance.now();
     try {
@@ -680,7 +679,7 @@ const getDistance = (
   return R * c;
 };
 
-// Generate realistic latency data
+// This is generating realistic latency data
 export const generateMockLatencyData = (): LatencyData[] => {
   const data: LatencyData[] = [];
 
@@ -841,44 +840,6 @@ const springConfig = {
 </motion.div>;
 ```
 
-### Error Handling Patterns
-
-```typescript
-// API error handling
-try {
-  const data = await fetchLatencyData();
-  setLatencyData(data);
-  setError(null);
-} catch (error) {
-  console.error("Failed to fetch latency data:", error);
-  toast.error("Failed to load latency data");
-  setError("Network connection failed");
-  // Fallback to cached data
-  setLatencyData(getCachedData());
-}
-
-// Component error boundaries
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("Component error:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <ErrorFallback />;
-    }
-    return this.props.children;
-  }
-}
-```
-
 ---
+
+Thank You...🙏
