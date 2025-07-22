@@ -34,10 +34,10 @@ module.exports = {
         "chart-5": "hsl(var(--chart-5))",
       },
       borderColor: {
-        border: "hsl(var(--border))", // Enables border-border
+        border: "hsl(var(--border))",
       },
       borderRadius: {
-        DEFAULT: "var(--radius)", // Maps to --radius
+        DEFAULT: "var(--radius)",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

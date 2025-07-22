@@ -10,6 +10,7 @@ import type { Feature, Geometry } from "geojson";
 import { toast } from "@/hooks/use-toast";
 
 // Mapbox access token
+//Use ENV file, for assesment i hardcoded it
 mapboxgl.accessToken =
   "pk.eyJ1Ijoic2ttdXNoYXJhZjEwIiwiYSI6ImNsd2RxZ3A1YzE3MW4ycXBwMDZieDl3Z3cifQ.Y3P6YoJSYwi_3w66luCAqg";
 
@@ -66,40 +67,60 @@ const MapboxGlobe = () => {
 
   // Memoize showHeatmap to prevent unnecessary re-renders
   const memoizedShowHeatmap = useMemo(() => showHeatmap, [showHeatmap]);
-  // Adding cloud region boundaries
+
+  // Define a type for providers
+  type CloudProvider = "AWS" | "GCP" | "Azure";
+
   useEffect(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
 
     const addCloudRegionBoundaries = () => {
-      // Removing the existing boundaries
+      // Define all possible boundary layers and sources
       const boundaryLayers = [
         "aws-boundaries",
         "gcp-boundaries",
         "azure-boundaries",
+        "aws-boundaries-fill",
+        "gcp-boundaries-fill",
+        "azure-boundaries-fill",
       ];
+      const boundarySources = ["aws-regions", "gcp-regions", "azure-regions"];
+
+      // Remove all existing boundary layers and sources
       boundaryLayers.forEach((layer) => {
         if (map.current!.getLayer(layer)) {
           map.current!.removeLayer(layer);
         }
       });
-
-      const boundarySources = ["aws-regions", "gcp-regions", "azure-regions"];
       boundarySources.forEach((source) => {
         if (map.current!.getSource(source)) {
           map.current!.removeSource(source);
         }
       });
 
-      // regions by provider
-      const regionsByProvider = {
-        AWS: cloudRegions.filter((r) => r.provider === "AWS"),
-        GCP: cloudRegions.filter((r) => r.provider === "GCP"),
-        Azure: cloudRegions.filter((r) => r.provider === "Azure"),
+      // Only include providers that are in the filter
+      const filteredProviders =
+        memoizedFilters.cloudProviders as CloudProvider[];
+
+      // Regions by provider, filtered by memoizedFilters.cloudProviders
+      const regionsByProvider: Record<CloudProvider, typeof cloudRegions> = {
+        AWS: cloudRegions.filter(
+          (r) => r.provider === "AWS" && filteredProviders.includes("AWS")
+        ),
+        GCP: cloudRegions.filter(
+          (r) => r.provider === "GCP" && filteredProviders.includes("GCP")
+        ),
+        Azure: cloudRegions.filter(
+          (r) => r.provider === "Azure" && filteredProviders.includes("Azure")
+        ),
       };
 
-      // Created boundary polygons for each provider
+      // Create boundary polygons for each provider
       Object.entries(regionsByProvider).forEach(([provider, regions]) => {
-        if (regions.length === 0) return;
+        // Assert provider as CloudProvider to satisfy TypeScript
+        const typedProvider = provider as CloudProvider;
+        if (regions.length === 0 || !filteredProviders.includes(typedProvider))
+          return;
 
         // Create convex hull around regions
         const coordinates = regions.map((r) => [
@@ -123,15 +144,15 @@ const MapboxGlobe = () => {
           [minLng, minLat],
         ];
 
-        const sourceId = `${provider.toLowerCase()}-regions`;
-        const layerId = `${provider.toLowerCase()}-boundaries`;
+        const sourceId = `${typedProvider.toLowerCase()}-regions`;
+        const layerId = `${typedProvider.toLowerCase()}-boundaries`;
 
         // Add source
         map.current!.addSource(sourceId, {
           type: "geojson",
           data: {
             type: "Feature",
-            properties: { provider },
+            properties: { provider: typedProvider },
             geometry: {
               type: "Polygon",
               coordinates: [boundaryPolygon],
@@ -139,19 +160,20 @@ const MapboxGlobe = () => {
           },
         });
 
-        // Add boundary layer
-        const colors = {
+        // Define colors with explicit type
+        const colors: Record<CloudProvider, string> = {
           AWS: "#FF9500",
           GCP: "#4285F4",
           Azure: "#00D4FF",
         };
 
+        // Add boundary layer
         map.current!.addLayer({
           id: layerId,
           type: "line",
           source: sourceId,
           paint: {
-            "line-color": colors[provider as keyof typeof colors],
+            "line-color": colors[typedProvider], // No type assertion needed
             "line-width": 2,
             "line-opacity": 0.6,
             "line-dasharray": [2, 2],
@@ -165,7 +187,7 @@ const MapboxGlobe = () => {
             type: "fill",
             source: sourceId,
             paint: {
-              "fill-color": colors[provider as keyof typeof colors],
+              "fill-color": colors[typedProvider],
               "fill-opacity": 0.1,
             },
           },
