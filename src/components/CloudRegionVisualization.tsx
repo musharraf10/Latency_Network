@@ -14,7 +14,7 @@ import { useTheme } from "@/hooks/useTheme";
 const CloudRegionVisualization = () => {
   const { filters, setSelectedCloudRegion, selectedCloudRegion } = useStore();
   const { latencyData } = useRealTimeLatency();
-  const { isDark } = useTheme(); // Use isDark from useTheme hook
+  const { isDark } = useTheme();
 
   const regionStats = useMemo(() => {
     return cloudRegions.map((region) => {
@@ -28,7 +28,7 @@ const CloudRegionVisualization = () => {
               regionLatencies.reduce((sum, data) => sum + data.latency, 0) /
                 regionLatencies.length
             )
-          : 0;
+          : 0; // Latency condition
 
       const connections = regionLatencies.length;
       const status =
@@ -41,7 +41,7 @@ const CloudRegionVisualization = () => {
         status,
       };
     });
-  }, [latencyData]);
+  }, [latencyData]); // Dependency when ever the latency data change then this useMemo Hook  trigger
 
   const filteredRegions = regionStats.filter((region) =>
     filters.cloudProviders.includes(region.provider)
@@ -188,3 +188,4 @@ const CloudRegionVisualization = () => {
 };
 
 export default CloudRegionVisualization;
+//Completed

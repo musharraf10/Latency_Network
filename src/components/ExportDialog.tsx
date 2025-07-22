@@ -1,4 +1,3 @@
-// src/components/ExportDialog.tsx
 "use client";
 
 import { useState } from "react";
@@ -14,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { Download, FileText, Image, Database } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
+import { toast } from "@/hooks/use-toast";
 
 const ExportDialog = () => {
   const { latencyData, historicalData, statistics } = useRealTimeLatency();
@@ -113,7 +113,7 @@ const ExportDialog = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Export failed:", error);
+      toast.error("Export failed. Please try again.");
     } finally {
       setIsExporting(false);
     }
@@ -169,7 +169,7 @@ const ExportDialog = () => {
         }
       });
     } catch (error) {
-      console.error("Screenshot capture failed:", error);
+      toast.error("Screenshot capture failed. Please try again.");
     } finally {
       setIsExporting(false);
     }
@@ -286,3 +286,4 @@ const ExportDialog = () => {
 };
 
 export default ExportDialog;
+//Completed optional make pdf report later

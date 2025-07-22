@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -34,12 +34,6 @@ import { useTheme } from "@/hooks/useTheme";
 interface Exchange {
   id: string;
   name: string;
-}
-
-interface HistoricalDataPoint {
-  timestamp: string;
-  latency: number;
-  packetLoss: number;
 }
 
 interface StoreState {
@@ -161,7 +155,7 @@ const HistoricalChart = () => {
             </div>
           </div>
 
-          {/* Chart remains the same */}
+          {/* Chat representation  */}
           <div
             className={`rounded-lg p-4 ${
               isDark ? "bg-slate-800" : "bg-gray-100"
@@ -186,7 +180,7 @@ const HistoricalChart = () => {
                     value: "Latency (ms)",
                     angle: -90,
                     position: "insideLeft",
-                    fill: isDark ? "#94A3B8" : "#475569", // ensure label color matches theme
+                    fill: isDark ? "#94A3B8" : "#475569",
                   }}
                 />
                 <YAxis
@@ -198,7 +192,7 @@ const HistoricalChart = () => {
                     value: "Packet Loss (%)",
                     angle: 90,
                     position: "insideRight",
-                    fill: isDark ? "#94A3B8" : "#475569", // ensure label color matches theme
+                    fill: isDark ? "#94A3B8" : "#475569",
                   }}
                 />
                 <Tooltip
@@ -239,3 +233,4 @@ const HistoricalChart = () => {
 };
 
 export default HistoricalChart;
+//Completed

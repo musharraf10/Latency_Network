@@ -172,7 +172,7 @@ export const cloudRegions: CloudRegion[] = [
     provider: "GCP",
     regionCode: "asia-south1",
     location: "Mumbai",
-    coordinates: [19.076, 72.8777], // Corrected to Mumbai
+    coordinates: [19.076, 72.8777],
     zones: ["a", "b", "c"],
   },
   // Azure Regions
@@ -210,22 +210,22 @@ export const cloudRegions: CloudRegion[] = [
   },
 ];
 
-// Generate mock latency data with distance-based latency
+// mock latency data with distance-based latency
 export const generateMockLatencyData = (): LatencyData[] => {
   const data: LatencyData[] = [];
 
   exchanges.forEach((exchange) => {
     cloudRegions.forEach((region) => {
-      // Calculate distance between exchange and cloud region
+      // distance between exchange and cloud region
       const distance = getDistance(
         exchange.coordinates[0],
         exchange.coordinates[1],
         region.coordinates[0],
         region.coordinates[1]
       );
-      // Base latency: 0.1ms per km (approximate for fiber-optic networks)
+      // Base latency: 0.1ms per km (approximate for fiber-optic networks) for example
       const baseLatency = distance * 0.1;
-      // Add variation for network conditions
+      // variation for network conditions
       const variation = (Math.random() - 0.5) * 20;
       const latency = Math.max(1, Math.round(baseLatency + variation));
 
@@ -257,7 +257,7 @@ export const generateHistoricalData = (
   const region =
     cloudRegions.find((r) => r.id === cloudRegionId) || cloudRegions[0];
 
-  // Calculate base latency based on distance
+  // base latency based on distance
   const distance = getDistance(
     exchange.coordinates[0],
     exchange.coordinates[1],

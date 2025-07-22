@@ -6,7 +6,7 @@ import { CatmullRomCurve3, Vector3, TubeGeometry } from "three";
 import { exchanges, cloudRegions } from "@/data/mockData";
 import type { LatencyData } from "@/types";
 
-// Convert lat/lng to 3D coordinates
+// Convert lat/lng to 3D coordinates on globe
 const latLngToVector3 = (lat: number, lng: number, radius: number = 5) => {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lng + 180) * (Math.PI / 180);
@@ -21,7 +21,7 @@ const latLngToVector3 = (lat: number, lng: number, radius: number = 5) => {
 const getLatencyColor = (latency: number) => {
   if (latency < 50) return "#00FF88";
   if (latency < 150) return "#FFB800";
-  return "#FF3366"; // Red
+  return "#FF3366";
 };
 
 const LatencyConnection = ({ connection }: { connection: LatencyData }) => {
@@ -51,7 +51,7 @@ const LatencyConnection = ({ connection }: { connection: LatencyData }) => {
       .addVectors(startPos, endPos)
       .multiplyScalar(0.5)
       .normalize()
-      .multiplyScalar(6); // Raise the arc above the surface
+      .multiplyScalar(6); // Raising arc above the surface of globe
 
     const curve = new CatmullRomCurve3([startPos, midPoint, endPos]);
     const color = getLatencyColor(connection.latency);
@@ -80,3 +80,4 @@ const LatencyConnection = ({ connection }: { connection: LatencyData }) => {
 };
 
 export default LatencyConnection;
+// Completed

@@ -1,10 +1,6 @@
-import type {
-  Exchange,
-  CloudRegion,
-  LatencyData,
-  HistoricalData,
-} from "@/types";
+import type { LatencyData, HistoricalData } from "@/types";
 import { generateHistoricalData } from "@/data/mockData";
+import { toast } from "@/hooks/use-toast";
 
 export class LatencyMonitor {
   private static instance: LatencyMonitor;
@@ -116,7 +112,7 @@ export class LatencyMonitor {
           });
         } catch (error) {
           latencyData.push({
-            exchangeId: exchange.id, // Fixed typo: 'exceptance' to 'exchange'
+            exchangeId: exchange.id,
             cloudRegionId: cloud.id,
             latency: Math.round(Math.random() * 300 + 20),
             timestamp: Date.now(),
@@ -336,6 +332,7 @@ export class HistoricalDataAPI {
       // Use generateHistoricalData from mockData.ts
       return generateHistoricalData(hours, exchangeId, regionId);
     } catch (error) {
+      toast.error("Failed to fetch historical data.");
       console.error("Failed to fetch historical data:", error);
       return generateHistoricalData(hours, exchangeId, regionId); // Fallback to same function
     }
@@ -382,3 +379,4 @@ export class NetworkPerformanceMonitor {
     return null;
   }
 }
+//Completed

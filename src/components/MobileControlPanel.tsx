@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Input } from "@/components/ui/input";
 import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
-import { exchanges, cloudRegions } from "@/data/mockData";
+import { exchanges } from "@/data/mockData";
 import { useTheme } from "@/hooks/useTheme";
 import NetworkStatus from "./NetworkStatus";
 import SearchPanel from "./SearchPanel";
@@ -36,7 +34,9 @@ const MobileControlPanel = () => {
   const { isDark } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"control" | "advanced">("control");
-  const [advancedSubTab, setAdvancedSubTab] = useState<"regions" | "performance" | "topology">("regions");
+  const [advancedSubTab, setAdvancedSubTab] = useState<
+    "regions" | "performance" | "topology"
+  >("regions");
   const [dragY, setDragY] = useState(0);
 
   const {
@@ -52,7 +52,6 @@ const MobileControlPanel = () => {
   } = useStore();
 
   const {
-    latencyData,
     refreshData,
     toggleRealTime,
     pauseRealTime,
@@ -153,13 +152,25 @@ const MobileControlPanel = () => {
                   isDark ? "bg-slate-800" : "bg-slate-100"
                 }`}
               >
-                <Grip className={`w-5 h-5 ${isDark ? "text-white" : "text-slate-900"}`} />
+                <Grip
+                  className={`w-5 h-5 ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}
+                />
               </div>
               <div>
-                <h2 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>
+                <h2
+                  className={`font-bold text-lg ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}
+                >
                   Control Center
                 </h2>
-                <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                <p
+                  className={`text-sm ${
+                    isDark ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
                   Network monitoring controls
                 </p>
               </div>
@@ -184,26 +195,50 @@ const MobileControlPanel = () => {
           <div className="px-6 pb-6">
             <div className="grid grid-cols-4 gap-3">
               <div className="text-center">
-                <div className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>
+                <div
+                  className={`font-bold text-lg ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}
+                >
                   {statistics.avgLatency}ms
                 </div>
-                <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                <div
+                  className={`text-xs ${
+                    isDark ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
                   Latency
                 </div>
               </div>
               <div className="text-center">
-                <div className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>
+                <div
+                  className={`font-bold text-lg ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}
+                >
                   {statistics.activeConnections}
                 </div>
-                <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                <div
+                  className={`text-xs ${
+                    isDark ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
                   Active
                 </div>
               </div>
               <div className="text-center">
-                <div className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>
+                <div
+                  className={`font-bold text-lg ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}
+                >
                   {statistics.avgPacketLoss}%
                 </div>
-                <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                <div
+                  className={`text-xs ${
+                    isDark ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
                   Loss
                 </div>
               </div>
@@ -215,7 +250,11 @@ const MobileControlPanel = () => {
                 >
                   {isConnected ? "●" : "○"}
                 </div>
-                <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                <div
+                  className={`text-xs ${
+                    isDark ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
                   Status
                 </div>
               </div>
@@ -233,9 +272,11 @@ const MobileControlPanel = () => {
               className="px-6 pb-6 max-h-[70vh] overflow-hidden"
             >
               {/* Main Tabs */}
-              <div className={`flex gap-1 mb-6 rounded-xl p-1 transition-colors ${
-                isDark ? "bg-slate-800/50" : "bg-slate-200/50"
-              }`}>
+              <div
+                className={`flex gap-1 mb-6 rounded-xl p-1 transition-colors ${
+                  isDark ? "bg-slate-800/50" : "bg-slate-200/50"
+                }`}
+              >
                 <Button
                   variant={activeTab === "control" ? "default" : "ghost"}
                   size="sm"
@@ -285,22 +326,30 @@ const MobileControlPanel = () => {
                       </Button>
 
                       {/* Exchanges Filter */}
-                      <Card className={`transition-colors ${
-                        isDark
-                          ? "bg-slate-800/50 border-slate-700/50"
-                          : "bg-slate-100/50 border-slate-300/50"
-                      }`}>
+                      <Card
+                        className={`transition-colors ${
+                          isDark
+                            ? "bg-slate-800/50 border-slate-700/50"
+                            : "bg-slate-100/50 border-slate-300/50"
+                        }`}
+                      >
                         <CardHeader className="pb-3">
-                          <CardTitle className={`flex items-center gap-2 text-base ${
-                            isDark ? "text-white" : "text-slate-900"
-                          }`}>
+                          <CardTitle
+                            className={`flex items-center gap-2 text-base ${
+                              isDark ? "text-white" : "text-slate-900"
+                            }`}
+                          >
                             <TrendingUp className="w-4 h-4 text-green-400" />
                             Exchanges
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                           <Button
-                            variant={filters.exchanges.length === 0 ? "default" : "outline"}
+                            variant={
+                              filters.exchanges.length === 0
+                                ? "default"
+                                : "outline"
+                            }
                             size="sm"
                             className="w-full"
                             onClick={() => setFilters({ exchanges: [] })}
@@ -312,9 +361,11 @@ const MobileControlPanel = () => {
                               key={exchange.id}
                               className="flex items-center justify-between"
                             >
-                              <span className={`text-sm ${
-                                isDark ? "text-slate-300" : "text-slate-600"
-                              }`}>
+                              <span
+                                className={`text-sm ${
+                                  isDark ? "text-slate-300" : "text-slate-600"
+                                }`}
+                              >
                                 {exchange.name}
                               </span>
                               <Switch
@@ -322,7 +373,9 @@ const MobileControlPanel = () => {
                                   filters.exchanges.length === 0 ||
                                   filters.exchanges.includes(exchange.id)
                                 }
-                                onCheckedChange={() => handleExchangeToggle(exchange.id)}
+                                onCheckedChange={() =>
+                                  handleExchangeToggle(exchange.id)
+                                }
                               />
                             </div>
                           ))}
@@ -330,57 +383,78 @@ const MobileControlPanel = () => {
                       </Card>
 
                       {/* Cloud Providers Filter */}
-                      <Card className={`transition-colors ${
-                        isDark
-                          ? "bg-slate-800/50 border-slate-700/50"
-                          : "bg-slate-100/50 border-slate-300/50"
-                      }`}>
+                      <Card
+                        className={`transition-colors ${
+                          isDark
+                            ? "bg-slate-800/50 border-slate-700/50"
+                            : "bg-slate-100/50 border-slate-300/50"
+                        }`}
+                      >
                         <CardHeader className="pb-3">
-                          <CardTitle className={`flex items-center gap-2 text-base ${
-                            isDark ? "text-white" : "text-slate-900"
-                          }`}>
+                          <CardTitle
+                            className={`flex items-center gap-2 text-base ${
+                              isDark ? "text-white" : "text-slate-900"
+                            }`}
+                          >
                             <Cloud className="w-4 h-4 text-blue-400" />
                             Cloud Providers
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                          {(["AWS", "GCP", "Azure"] as const).map((provider) => (
-                            <div key={provider} className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className={`w-3 h-3 rounded-full ${
-                                    provider === "AWS"
-                                      ? "bg-orange-500"
-                                      : provider === "GCP"
-                                      ? "bg-blue-500"
-                                      : "bg-cyan-400"
-                                  }`}
+                          {(["AWS", "GCP", "Azure"] as const).map(
+                            (provider) => (
+                              <div
+                                key={provider}
+                                className="flex items-center justify-between"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className={`w-3 h-3 rounded-full ${
+                                      provider === "AWS"
+                                        ? "bg-orange-500"
+                                        : provider === "GCP"
+                                        ? "bg-blue-500"
+                                        : "bg-cyan-400"
+                                    }`}
+                                  />
+                                  <span
+                                    className={`text-sm ${
+                                      isDark
+                                        ? "text-slate-300"
+                                        : "text-slate-600"
+                                    }`}
+                                  >
+                                    {provider}
+                                  </span>
+                                </div>
+                                <Switch
+                                  checked={filters.cloudProviders.includes(
+                                    provider
+                                  )}
+                                  onCheckedChange={() =>
+                                    handleProviderToggle(provider)
+                                  }
                                 />
-                                <span className={`text-sm ${
-                                  isDark ? "text-slate-300" : "text-slate-600"
-                                }`}>
-                                  {provider}
-                                </span>
                               </div>
-                              <Switch
-                                checked={filters.cloudProviders.includes(provider)}
-                                onCheckedChange={() => handleProviderToggle(provider)}
-                              />
-                            </div>
-                          ))}
+                            )
+                          )}
                         </CardContent>
                       </Card>
 
                       {/* Controls */}
-                      <Card className={`transition-colors ${
-                        isDark
-                          ? "bg-slate-800/50 border-slate-700/50"
-                          : "bg-slate-100/50 border-slate-300/50"
-                      }`}>
+                      <Card
+                        className={`transition-colors ${
+                          isDark
+                            ? "bg-slate-800/50 border-slate-700/50"
+                            : "bg-slate-100/50 border-slate-300/50"
+                        }`}
+                      >
                         <CardHeader className="pb-3">
-                          <CardTitle className={`flex items-center gap-2 text-base ${
-                            isDark ? "text-white" : "text-slate-900"
-                          }`}>
+                          <CardTitle
+                            className={`flex items-center gap-2 text-base ${
+                              isDark ? "text-white" : "text-slate-900"
+                            }`}
+                          >
                             <Settings className="w-4 h-4 text-slate-400" />
                             Controls
                           </CardTitle>
@@ -388,9 +462,11 @@ const MobileControlPanel = () => {
                         <CardContent className="space-y-4">
                           {/* Real-time Toggle */}
                           <div className="flex justify-between items-center">
-                            <span className={`text-sm ${
-                              isDark ? "text-slate-300" : "text-slate-600"
-                            }`}>
+                            <span
+                              className={`text-sm ${
+                                isDark ? "text-slate-300" : "text-slate-600"
+                              }`}
+                            >
                               Real-time Updates
                             </span>
                             <Switch
@@ -401,9 +477,11 @@ const MobileControlPanel = () => {
 
                           {/* Pause/Resume Toggle */}
                           <div className="flex justify-between items-center">
-                            <span className={`text-sm ${
-                              isDark ? "text-slate-300" : "text-slate-600"
-                            }`}>
+                            <span
+                              className={`text-sm ${
+                                isDark ? "text-slate-300" : "text-slate-600"
+                              }`}
+                            >
                               {isPaused ? "Resume Updates" : "Pause Updates"}
                             </span>
                             <Button
@@ -419,31 +497,42 @@ const MobileControlPanel = () => {
 
                           {/* Heatmap Toggle */}
                           <div className="flex justify-between items-center">
-                            <span className={`text-sm ${
-                              isDark ? "text-slate-300" : "text-slate-600"
-                            }`}>
+                            <span
+                              className={`text-sm ${
+                                isDark ? "text-slate-300" : "text-slate-600"
+                              }`}
+                            >
                               Latency Heatmap
                             </span>
-                            <Switch checked={showHeatmap} onCheckedChange={setShowHeatmap} />
+                            <Switch
+                              checked={showHeatmap}
+                              onCheckedChange={setShowHeatmap}
+                            />
                           </div>
 
                           {/* Latency Range Filter */}
                           <div className="space-y-2">
-                            <span className={`text-sm ${
-                              isDark ? "text-slate-300" : "text-slate-600"
-                            }`}>
+                            <span
+                              className={`text-sm ${
+                                isDark ? "text-slate-300" : "text-slate-600"
+                              }`}
+                            >
                               Latency Range
                             </span>
-                            <div className={`flex justify-between text-sm ${
-                              isDark ? "text-slate-300" : "text-slate-600"
-                            }`}>
+                            <div
+                              className={`flex justify-between text-sm ${
+                                isDark ? "text-slate-300" : "text-slate-600"
+                              }`}
+                            >
                               <span>{filters.latencyRange[0]}ms</span>
                               <span>{filters.latencyRange[1]}ms</span>
                             </div>
                             <Slider
                               value={filters.latencyRange}
                               onValueChange={(value) =>
-                                setFilters({ latencyRange: value as [number, number] })
+                                setFilters({
+                                  latencyRange: value as [number, number],
+                                })
                               }
                               max={500}
                               min={0}
@@ -480,11 +569,15 @@ const MobileControlPanel = () => {
                       className="space-y-4"
                     >
                       {/* Advanced Sub Tabs */}
-                      <div className={`flex gap-1 rounded-lg p-1 transition-colors ${
-                        isDark ? "bg-slate-800/50" : "bg-slate-200/50"
-                      }`}>
+                      <div
+                        className={`flex gap-1 rounded-lg p-1 transition-colors ${
+                          isDark ? "bg-slate-800/50" : "bg-slate-200/50"
+                        }`}
+                      >
                         <Button
-                          variant={advancedSubTab === "regions" ? "default" : "ghost"}
+                          variant={
+                            advancedSubTab === "regions" ? "default" : "ghost"
+                          }
                           size="sm"
                           onClick={() => setAdvancedSubTab("regions")}
                           className="flex-1 text-xs"
@@ -493,7 +586,11 @@ const MobileControlPanel = () => {
                           Regions
                         </Button>
                         <Button
-                          variant={advancedSubTab === "performance" ? "default" : "ghost"}
+                          variant={
+                            advancedSubTab === "performance"
+                              ? "default"
+                              : "ghost"
+                          }
                           size="sm"
                           onClick={() => setAdvancedSubTab("performance")}
                           className="flex-1 text-xs"
@@ -502,7 +599,9 @@ const MobileControlPanel = () => {
                           Performance
                         </Button>
                         <Button
-                          variant={advancedSubTab === "topology" ? "default" : "ghost"}
+                          variant={
+                            advancedSubTab === "topology" ? "default" : "ghost"
+                          }
                           size="sm"
                           onClick={() => setAdvancedSubTab("topology")}
                           className="flex-1 text-xs"
@@ -560,3 +659,4 @@ const MobileControlPanel = () => {
 };
 
 export default MobileControlPanel;
+//completed

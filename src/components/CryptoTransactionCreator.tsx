@@ -24,7 +24,6 @@ import {
   ArrowRight,
   Zap,
   CheckCircle,
-  AlertCircle,
   Coins,
 } from "lucide-react";
 
@@ -129,7 +128,7 @@ const CryptoTransactionCreator = () => {
     from: SelectedPoint,
     to: SelectedPoint
   ): number => {
-    // Try to get real latency data first
+    // this Try to get real latency data first
     const realLatency = latencyData.find(
       (data) =>
         (data.exchangeId === from.id && data.cloudRegionId === to.id) ||
@@ -663,3 +662,5 @@ const CryptoTransactionCreator = () => {
 };
 
 export default CryptoTransactionCreator;
+
+//Completed
