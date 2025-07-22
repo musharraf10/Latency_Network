@@ -11,7 +11,6 @@
 7. [Utility Functions](#utility-functions)
 8. [State Management](#state-management)
 9. [Performance Optimizations](#performance-optimizations)
-10. [Error Handling](#error-handling)
 
 ---
 
