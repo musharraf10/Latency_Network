@@ -344,7 +344,7 @@ const MapboxGlobe = () => {
 
 #### MobileControlPanel.tsx
 
-iOS-style swipe-up control panel for mobile devices.
+Swipe-up control panel for mobile devices.
 
 ```typescript
 // Features:
