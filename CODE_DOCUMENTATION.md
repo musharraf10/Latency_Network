@@ -27,7 +27,7 @@ src/
 ├── components/            # React components
 │   ├── ui/               # Reusable UI components (Radix + Tailwind)
 │   ├── MapboxGlobe.tsx   # 3D globe visualization
-│   ├── MobileControlPanel.tsx # iOS-style mobile interface
+│   ├── MobileControlPanel.tsx # Contro panel drag feature for mobile interface
 │   ├── HistoricalChart.tsx # Data visualization charts
 │   └── [other components]
 ├── hooks/                 # Custom React hooks
@@ -46,7 +46,7 @@ src/
 
 ---
 
-## Core Components
+## Core Components (With Snippet codes)
 
 ### MapboxGlobe.tsx
 
@@ -82,13 +82,6 @@ const MapboxGlobe = () => {
 - **Cloud Region Boundaries**: Visual boundaries for AWS, GCP, and Azure regions
 - **Theme Support**: Automatic style switching for dark/light modes
 
-**Performance Optimizations**:
-
-- Marker reuse and cleanup
-- Efficient GeoJSON updates
-- Animation frame management
-- Memory leak prevention
-
 ### MobileControlPanel.tsx
 
 **Purpose**: Swipe-up control panel for mobile devices.
@@ -117,21 +110,21 @@ const MobileControlPanel = () => {
 
 **Key Features**:
 
-- **Swipe Gestures**: Natural drag style interactions
+- **Swipe Gestures**: Natural drag style interactions for mobile user
 - **Two-Level Navigation**: Main tabs with sub-navigation
 - **Quick Stats**: Always-visible key metrics when collapsed
-- **Backdrop Blur**: Professional glassmorphism effect
-- **Spring Animations**: Physics-based motion with Framer Motion
+- **Backdrop Blur**: Professional glassy effect
+- **Spring Animations**: Physics-based motion with the help of Framer Motion
 
 **UI Structure**:
 
 1. **Control Panel Tab**: Network status, search, filters, controls
 2. **Advanced Panel Tab**: Cloud regions, performance, network topology
-3. **Quick Stats Bar**: Persistent metrics display
+3. **Quick Stats Bar**: Persistent metrics display (shows network range, latency, active connections)
 
 ### HistoricalChart.tsx
 
-**Purpose**: Interactive historical latency data visualization with cryptocurrency selection.
+**Purpose**: Interactive historical latency data visualization with cryptocurrency selection (upto 30days History).
 
 ```typescript
 const HistoricalChart = () => {
@@ -195,10 +188,10 @@ const NetworkTopology = () => {
 
 **Key Features**:
 
-- **Real-time Search**: Live filtering of exchanges and regions
+- **Real-time Search**: Live filtering of exchanges and regions for better clarification
 - **Network Path Visualization**: Simulated network hops and bandwidth
 - **Connection Details**: Latency, packet loss, and performance metrics
-- **Visual Path Display**: Animated connection lines
+- **Visual Path Display**: Animated connection dotted lines
 
 ---
 
@@ -249,7 +242,7 @@ export const useRealTimeLatency = () => {
 - **Network Information**: Browser connection details
 - **Performance Metrics**: Page load and paint timing
 - **Statistics Calculation**: Live performance metrics
-- **Error Handling**: Graceful fallbacks and error recovery
+- **Error Handling**: Graceful fallbacks and error recovery automatically
 
 ### useStore.ts
 
@@ -281,7 +274,7 @@ export const useStore = create<AppState>((set) => ({
 - **Selection State**: Currently selected exchange and cloud region
 - **Filter State**: Active filters for exchanges, providers, and latency range
 - **UI State**: Modal visibility and feature toggles
-- **Actions**: State update functions with proper typing
+- **Actions**: State update functions with proper typing and accuracy without any failure
 
 ### useTheme.ts
 
@@ -306,7 +299,7 @@ export const useTheme = () => {
 **Features**:
 
 - **System Preference**: Automatic detection of OS theme
-- **Hydration Safety**: Prevents SSR mismatch issues
+- **Hydration Safety**: Prevents SSR mismatch issues (At present ingoring it)
 - **Theme Persistence**: Automatic storage in localStorage
 - **Toggle Function**: Easy theme switching
 
