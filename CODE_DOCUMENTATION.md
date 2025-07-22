@@ -299,7 +299,7 @@ export const useTheme = () => {
 **Features**:
 
 - **System Preference**: Automatic detection of OS theme
-- **Hydration Safety**: Prevents SSR mismatch issues (At present ingoring it)
+- **Hydration Safety**: Prevents SSR mismatch issues (At present suppressHydrationWarning)
 - **Theme Persistence**: Automatic storage in localStorage
 - **Toggle Function**: Easy theme switching
 
@@ -498,7 +498,7 @@ export interface CloudRegion {
   id: string; // Unique identifier
   provider: "AWS" | "GCP" | "Azure";
   regionCode: string; // Provider-specific region code
-  location: string; // Human-readable location
+  location: string; // Human readable locations
   coordinates: [number, number]; // [latitude, longitude]
   zones: string[]; // Availability zones
 }
@@ -573,33 +573,6 @@ export function cn(...inputs: ClassValue[]) {
 ```
 
 **Purpose**: Combines and merges Tailwind CSS classes intelligently, resolving conflicts and removing duplicates.
-
-### Animation Utilities
-
-```typescript
-// Framer Motion variants for consistent animations
-export const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
-
-export const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-export const springConfig = {
-  type: "spring",
-  damping: 30,
-  stiffness: 300,
-};
-```
-
----
 
 ## State Management
 
@@ -717,26 +690,6 @@ const useMarkerOptimization = () => {
 };
 ```
 
-### Animation Performance
-
-```typescript
-// Efficient animation cleanup
-useEffect(() => {
-  let animationId: number;
-
-  const animate = () => {
-    // Animation logic
-    animationId = requestAnimationFrame(animate);
-  };
-
-  animate();
-
-  return () => {
-    if (animationId) {
-      cancelAnimationFrame(animationId);
-    }
-  };
-}, []);
-```
-
 ---
+
+Thank You 🙏
