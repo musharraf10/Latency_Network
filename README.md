@@ -234,18 +234,6 @@ interface AppState {
 }
 ```
 
-## 📊 Data Sources & APIs
-
-- **Distance-based Latency**: Calculates realistic latency based on geographic distance
-- **Network Conditions**: Simulates various network conditions and packet loss
-- **Real-time Simulation**: Updates data every 5 seconds with realistic variations
-
-### API Classes
-
-- **LatencyMonitor**: Singleton class for real-time latency monitoring
-- **HistoricalDataAPI**: Manages historical data fetching and caching
-- **NetworkPerformanceMonitor**: Browser network information and performance metrics
-
 ---
 
 Thank You...🙏
