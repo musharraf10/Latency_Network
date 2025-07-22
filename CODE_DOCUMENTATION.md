@@ -389,7 +389,7 @@ export class NetworkPerformanceMonitor {
 
 **Metrics Collected**:
 
-- **Connection Type**: 2G, 3G, 4G, WiFi detection
+- **Connection Type**: 2G, 3G, 4G
 - **Bandwidth**: Download speed estimation
 - **Round Trip Time**: Network latency to ISP
 - **Page Performance**: Load timing metrics
