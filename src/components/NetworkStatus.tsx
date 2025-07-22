@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { useTheme } from "@/hooks/useTheme";
 import {
-  Activity,
   Wifi,
   WifiOff,
   RefreshCw,
@@ -56,13 +55,19 @@ const NetworkStatus = () => {
   const TrendIcon = trend.icon;
 
   return (
-    <Card className={`backdrop-blur-md transition-colors ${
-      isDark 
-        ? "bg-black/40 border-slate-700/50" 
-        : "bg-white/40 border-slate-300/50"
-    }`}>
+    <Card
+      className={`backdrop-blur-md transition-colors ${
+        isDark
+          ? "bg-black/40 border-slate-700/50"
+          : "bg-white/40 border-slate-300/50"
+      }`}
+    >
       <CardHeader className="pb-3">
-        <CardTitle className={`flex items-center justify-between ${isDark ? "text-white" : "text-slate-900"}`}>
+        <CardTitle
+          className={`flex items-center justify-between ${
+            isDark ? "text-white" : "text-slate-900"
+          }`}
+        >
           <div className="flex items-center gap-2">
             {isConnected ? (
               <Wifi className="w-5 h-5 text-green-400" />
@@ -86,19 +91,31 @@ const NetworkStatus = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <div className={`flex items-center gap-2 p-2 rounded-md border ${
-            isDark 
-              ? "bg-red-500/20 border-red-500/30" 
-              : "bg-red-100 border-red-300"
-          }`}>
+          <div
+            className={`flex items-center gap-2 p-2 rounded-md border ${
+              isDark
+                ? "bg-red-500/20 border-red-500/30"
+                : "bg-red-100 border-red-300"
+            }`}
+          >
             <AlertTriangle className="w-4 h-4 text-red-400" />
-            <span className={`text-sm ${isDark ? "text-red-300" : "text-red-700"}`}>{error}</span>
+            <span
+              className={`text-sm ${isDark ? "text-red-300" : "text-red-700"}`}
+            >
+              {error}
+            </span>
           </div>
         )}
 
         {/* Connection Status */}
         <div className="flex justify-between items-center">
-          <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Connection</span>
+          <span
+            className={`text-sm ${
+              isDark ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
+            Connection
+          </span>
           <Badge variant={isConnected ? "default" : "destructive"}>
             {isConnected ? "Online" : "Offline"}
           </Badge>
@@ -106,7 +123,13 @@ const NetworkStatus = () => {
 
         {/* Average Latency */}
         <div className="flex justify-between items-center">
-          <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Avg Latency</span>
+          <span
+            className={`text-sm ${
+              isDark ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
+            Avg Latency
+          </span>
           <div className="flex items-center gap-2">
             <TrendIcon className={`w-4 h-4 ${trend.color}`} />
             <Badge
@@ -125,15 +148,31 @@ const NetworkStatus = () => {
 
         {/* Latency Range */}
         <div className="flex justify-between items-center">
-          <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Range</span>
-          <span className={`font-mono text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+          <span
+            className={`text-sm ${
+              isDark ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
+            Range
+          </span>
+          <span
+            className={`font-mono text-sm ${
+              isDark ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
             {statistics.minLatency}ms - {statistics.maxLatency}ms
           </span>
         </div>
 
         {/* Active Connections */}
         <div className="flex justify-between items-center">
-          <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Active Connections</span>
+          <span
+            className={`text-sm ${
+              isDark ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
+            Active Connections
+          </span>
           <span className="text-green-400 font-mono">
             {statistics.activeConnections}/{statistics.totalConnections}
           </span>
@@ -141,7 +180,13 @@ const NetworkStatus = () => {
 
         {/* Packet Loss */}
         <div className="flex justify-between items-center">
-          <span className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Packet Loss</span>
+          <span
+            className={`text-sm ${
+              isDark ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
+            Packet Loss
+          </span>
           <span
             className={`font-mono text-sm ${
               parseFloat(statistics.avgPacketLoss) < 1
@@ -158,37 +203,83 @@ const NetworkStatus = () => {
         {/* Network Information */}
         {networkInfo && (
           <>
-            <div className={`border-t pt-3 ${isDark ? "border-slate-700" : "border-slate-300"}`}>
-              <h4 className={`font-medium mb-2 text-sm ${isDark ? "text-white" : "text-slate-900"}`}>
+            <div
+              className={`border-t pt-3 ${
+                isDark ? "border-slate-700" : "border-slate-300"
+              }`}
+            >
+              <h4
+                className={`font-medium mb-2 text-sm ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}
+              >
                 Network Info
               </h4>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-400" : "text-slate-500"
+                    }`}
+                  >
                     Connection Type
                   </span>
-                  <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-300" : "text-slate-600"
+                    }`}
+                  >
                     {networkInfo.effectiveType?.toUpperCase() || "Unknown"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>Quality</span>
-                  <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-400" : "text-slate-500"
+                    }`}
+                  >
+                    Quality
+                  </span>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-300" : "text-slate-600"
+                    }`}
+                  >
                     {getConnectionQuality()}
                   </span>
                 </div>
                 {networkInfo.downlink > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>Downlink</span>
-                    <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                    <span
+                      className={`text-xs ${
+                        isDark ? "text-slate-400" : "text-slate-500"
+                      }`}
+                    >
+                      Downlink
+                    </span>
+                    <span
+                      className={`text-xs ${
+                        isDark ? "text-slate-300" : "text-slate-600"
+                      }`}
+                    >
                       {networkInfo.downlink} Mbps
                     </span>
                   </div>
                 )}
                 {networkInfo.rtt > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>RTT</span>
-                    <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                    <span
+                      className={`text-xs ${
+                        isDark ? "text-slate-400" : "text-slate-500"
+                      }`}
+                    >
+                      RTT
+                    </span>
+                    <span
+                      className={`text-xs ${
+                        isDark ? "text-slate-300" : "text-slate-600"
+                      }`}
+                    >
                       {networkInfo.rtt}ms
                     </span>
                   </div>
@@ -200,21 +291,51 @@ const NetworkStatus = () => {
 
         {/* Performance Metrics */}
         {performanceMetrics && (
-          <div className={`border-t pt-3 ${isDark ? "border-slate-700" : "border-slate-300"}`}>
-            <h4 className={`font-medium mb-2 text-sm ${isDark ? "text-white" : "text-slate-900"}`}>Performance</h4>
+          <div
+            className={`border-t pt-3 ${
+              isDark ? "border-slate-700" : "border-slate-300"
+            }`}
+          >
+            <h4
+              className={`font-medium mb-2 text-sm ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
+              Performance
+            </h4>
             <div className="space-y-2">
               {performanceMetrics.firstContentfulPaint > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>First Paint</span>
-                  <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-400" : "text-slate-500"
+                    }`}
+                  >
+                    First Paint
+                  </span>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-300" : "text-slate-600"
+                    }`}
+                  >
                     {Math.round(performanceMetrics.firstContentfulPaint)}ms
                   </span>
                 </div>
               )}
               {performanceMetrics.domContentLoaded > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>DOM Ready</span>
-                  <span className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-400" : "text-slate-500"
+                    }`}
+                  >
+                    DOM Ready
+                  </span>
+                  <span
+                    className={`text-xs ${
+                      isDark ? "text-slate-300" : "text-slate-600"
+                    }`}
+                  >
                     {Math.round(performanceMetrics.domContentLoaded)}ms
                   </span>
                 </div>
@@ -228,3 +349,4 @@ const NetworkStatus = () => {
 };
 
 export default NetworkStatus;
+//D

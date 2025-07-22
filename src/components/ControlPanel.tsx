@@ -4,11 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/hooks/useStore";
 import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
-import { exchanges, cloudRegions } from "@/data/mockData";
-import { Activity, Cloud, TrendingUp, Settings, Layers } from "lucide-react";
+import { exchanges } from "@/data/mockData";
+import { Cloud, TrendingUp, Settings } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import NetworkStatus from "./NetworkStatus";
 import SearchPanel from "./SearchPanel";
@@ -29,14 +28,8 @@ const ControlPanel = () => {
     selectedExchange,
   } = useStore();
 
-  const {
-    latencyData,
-    refreshData,
-    toggleRealTime,
-    pauseRealTime,
-    isPaused,
-    isLoading,
-  } = useRealTimeLatency();
+  const { refreshData, toggleRealTime, pauseRealTime, isPaused, isLoading } =
+    useRealTimeLatency();
 
   const handleExchangeToggle = (exchangeId: string) => {
     const newExchanges = filters.exchanges.includes(exchangeId)
@@ -64,9 +57,9 @@ const ControlPanel = () => {
       {/* Network Status */}
       <NetworkStatus />
 
-      {/* Search Panel */}
+      {/* Search Panel for searching the Crypto as well as region*/}
       <SearchPanel />
-
+      {/* Whenever the Crypto or Region was seleted then only this Historical Button enable */}
       <Button
         variant={showHistorical ? "default" : "outline"}
         size="sm"

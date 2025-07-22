@@ -8,6 +8,7 @@ import {
 } from "@/lib/api";
 import type { LatencyData, HistoricalData } from "@/types";
 import { exchanges, cloudRegions } from "@/data/mockData";
+import { toast } from "@/hooks/use-toast";
 
 export const useRealTimeLatency = () => {
   const [latencyData, setLatencyData] = useState<LatencyData[]>([]);
@@ -68,7 +69,7 @@ export const useRealTimeLatency = () => {
         await monitorRef.current.start();
         setIsLoading(false);
       } catch (err) {
-        console.error("Failed to initialize latency monitor:", err);
+        toast.error("Failed to initialize latency monitor");
         setError("Failed to connect to latency monitoring service");
         setIsLoading(false);
       }
@@ -133,6 +134,7 @@ export const useRealTimeLatency = () => {
         );
       } catch (err) {
         console.error("Failed to load historical data:", err);
+        toast.error("Failed to load historical data");
         setError("Failed to load historical data");
       } finally {
         setIsLoading(false);
@@ -147,6 +149,7 @@ export const useRealTimeLatency = () => {
         setError(null);
         await monitorRef.current.start();
       } catch (err) {
+        toast.error("Failed to refresh data");
         setError("Failed to refresh data");
       }
     }

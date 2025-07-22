@@ -88,7 +88,7 @@ const NetworkTopology = () => {
       }
     });
 
-    setSearchResults(results.slice(0, 5)); // Limit to 5 results
+    setSearchResults(results.slice(0, 5)); // Limit to 5 results Only show top 5 results
     setShowSearchResults(true);
   };
 

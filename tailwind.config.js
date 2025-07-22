@@ -41,6 +41,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Playfair Display", "serif"],
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
       animation: {

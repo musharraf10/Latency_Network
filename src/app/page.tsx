@@ -39,7 +39,7 @@ export default function Home() {
           : "bg-gradient-to-br from-blue-50 via-white to-blue-50"
       }`}
     >
-      {/* Background gradient */}
+      {/* gradient colors background  */}
       <motion.div
         className={`absolute inset-0 transition-opacity duration-500 ${
           isDark
@@ -50,25 +50,25 @@ export default function Home() {
         initial={{ opacity: 0 }}
       />
 
-      {/* Globe visualization */}
+      {/* Globe visualization Component*/}
       <div className="absolute inset-0">
         <Suspense fallback={<LoadingScreen />}>
           <MapboxGlobe />
         </Suspense>
       </div>
 
-      {/* Mobile Control Panel */}
+      {/* Draggable Mobile Control Panel */}
       <MobileControlPanel />
 
-      {/* Control Panel */}
+      {/* Control Panel  for  large screens*/}
       <div className="hidden md:block">
         <ControlPanel />
       </div>
 
-      {/* Historical Chart Modal */}
+      {/* Historical Chart Compoenet*/}
       <HistoricalChart />
 
-      {/* Advanced Panels */}
+      {/* Advanced Panels for extra Network Topology and region details, Network status*/}
       <AnimatePresence>
         {showAdvanced && (
           <motion.div
@@ -78,13 +78,16 @@ export default function Home() {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute top-20 right-4 w-80 max-h-[calc(100vh-2rem)] overflow-y-auto z-10 space-y-4 hidden lg:block"
           >
-            <CloudRegionVisualization />
-            <PerformanceDashboard />
-            <NetworkTopology />
+            <CloudRegionVisualization />{" "}
+            {/* Cloud Region Component for showing the region related data*/}
+            <PerformanceDashboard />{" "}
+            {/* Performance related stats shown in this component*/}
+            <NetworkTopology />{" "}
+            {/* Network related all info shows in this component */}
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Header */}
+      {/* Header  for showing the assessment Title and a small info */}
       <motion.div
         className="absolute top-4 right-4 z-10 max-w-[calc(100vw-5rem)] md:max-w-none"
         initial={{ opacity: 0, y: -20 }}
@@ -113,7 +116,7 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* Mobile Legend Dialog */}
+              {/* in mobile view doesn't show the Legend info so this will help when user click help icon */}
               <Dialog
                 open={showMobileLegend}
                 onOpenChange={setShowMobileLegend}
@@ -233,7 +236,7 @@ export default function Home() {
                   </div>
                 </DialogContent>
               </Dialog>
-
+              {/* Them related Toggle for large screens */}
               <ThemeToggle />
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
@@ -262,7 +265,7 @@ export default function Home() {
         </div>
       </motion.div>
 
-      {/* Legend */}
+      {/* Legend for large screens */}
       <Legend />
     </div>
   );

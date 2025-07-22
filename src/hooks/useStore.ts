@@ -12,7 +12,7 @@ export const useStore = create<AppState>((set) => ({
   realTimeEnabled: true,
   showHistorical: false,
   showHeatmap: false,
-  darkMode: false,
+  darkMode: true,
   setSelectedExchange: (id) => set({ selectedExchange: id }),
   setSelectedCloudRegion: (id) => set({ selectedCloudRegion: id }),
   setFilters: (filters) =>
@@ -21,6 +21,9 @@ export const useStore = create<AppState>((set) => ({
     })),
   setRealTimeEnabled: (enabled) => set({ realTimeEnabled: enabled }),
   setShowHistorical: (show) => set({ showHistorical: show }),
-  setShowHeatmap: (show) => set({ showHeatmap: show }),
+  setShowHeatmap: (show) => {
+    // console.log("Setting showHeatmap to:", show);
+    set({ showHeatmap: show });
+  },
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
 }));

@@ -76,11 +76,11 @@ const LatencyHeatmap = ({ visible = false }: { visible?: boolean }) => {
     >();
 
     latencyData.forEach((data) => {
-      // Simplified region mapping - in a real app, you'd have proper coordinates
+      // Simplified region mapping - in a real app, for proper coordinates
       const regionKey = data.cloudRegionId;
 
       if (!regionData.has(regionKey)) {
-        // Convert region to approximate 3D position on sphere
+        // Converting region to approximate 3D position on sphere
         const phi = Math.random() * Math.PI;
         const theta = Math.random() * Math.PI * 2;
         const position = new Vector3(
@@ -108,7 +108,7 @@ const LatencyHeatmap = ({ visible = false }: { visible?: boolean }) => {
 
     Array.from(regionData.values()).forEach((region) => {
       hotspots.push(region.position);
-      // Convert latency to intensity (higher latency = higher intensity)
+      // Converting latency to intensity (higher latency = higher intensity)
       const intensity = Math.min(1.0, region.avgLatency / 200);
       intensities.push(intensity);
     });
@@ -116,7 +116,7 @@ const LatencyHeatmap = ({ visible = false }: { visible?: boolean }) => {
     return { hotspots, intensities };
   }, [latencyData]);
 
-  // Update shader uniforms
+  // Updating the shader uniforms
   useFrame((state) => {
     if (materialRef.current) {
       materialRef.current.uniforms.time.value = state.clock.elapsedTime;
@@ -151,3 +151,4 @@ const LatencyHeatmap = ({ visible = false }: { visible?: boolean }) => {
 };
 
 export default LatencyHeatmap;
+// Completed

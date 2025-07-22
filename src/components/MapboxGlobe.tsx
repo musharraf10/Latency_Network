@@ -7,12 +7,13 @@ import { useRealTimeLatency } from "@/hooks/useRealTimeLatency";
 import { exchanges, cloudRegions } from "@/data/mockData";
 import { useTheme } from "@/hooks/useTheme";
 import type { Feature, Geometry } from "geojson";
+import { toast } from "@/hooks/use-toast";
 
-// Set Mapbox access token
+// Mapbox access token
 mapboxgl.accessToken =
   "pk.eyJ1Ijoic2ttdXNoYXJhZjEwIiwiYSI6ImNsd2RxZ3A1YzE3MW4ycXBwMDZieDl3Z3cifQ.Y3P6YoJSYwi_3w66luCAqg";
 
-// Define types for GeoJSON properties
+// Defined types for GeoJSON properties
 interface ConnectionProperties {
   latency: number;
   color: string;
@@ -63,43 +64,52 @@ const MapboxGlobe = () => {
     [filters.exchanges, filters.cloudProviders, filters.latencyRange]
   );
 
-  // Add cloud region boundaries
+  // Memoize showHeatmap to prevent unnecessary re-renders
+  const memoizedShowHeatmap = useMemo(() => showHeatmap, [showHeatmap]);
+  // Adding cloud region boundaries
   useEffect(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
 
     const addCloudRegionBoundaries = () => {
-      // Remove existing boundaries
-      const boundaryLayers = ['aws-boundaries', 'gcp-boundaries', 'azure-boundaries'];
-      boundaryLayers.forEach(layer => {
+      // Removing the existing boundaries
+      const boundaryLayers = [
+        "aws-boundaries",
+        "gcp-boundaries",
+        "azure-boundaries",
+      ];
+      boundaryLayers.forEach((layer) => {
         if (map.current!.getLayer(layer)) {
           map.current!.removeLayer(layer);
         }
       });
-      
-      const boundarySources = ['aws-regions', 'gcp-regions', 'azure-regions'];
-      boundarySources.forEach(source => {
+
+      const boundarySources = ["aws-regions", "gcp-regions", "azure-regions"];
+      boundarySources.forEach((source) => {
         if (map.current!.getSource(source)) {
           map.current!.removeSource(source);
         }
       });
 
-      // Group regions by provider
+      // regions by provider
       const regionsByProvider = {
-        AWS: cloudRegions.filter(r => r.provider === 'AWS'),
-        GCP: cloudRegions.filter(r => r.provider === 'GCP'),
-        Azure: cloudRegions.filter(r => r.provider === 'Azure')
+        AWS: cloudRegions.filter((r) => r.provider === "AWS"),
+        GCP: cloudRegions.filter((r) => r.provider === "GCP"),
+        Azure: cloudRegions.filter((r) => r.provider === "Azure"),
       };
 
-      // Create boundary polygons for each provider
+      // Created boundary polygons for each provider
       Object.entries(regionsByProvider).forEach(([provider, regions]) => {
         if (regions.length === 0) return;
 
         // Create convex hull around regions
-        const coordinates = regions.map(r => [r.coordinates[1], r.coordinates[0]]);
-        
+        const coordinates = regions.map((r) => [
+          r.coordinates[1],
+          r.coordinates[0],
+        ]);
+
         // Simple bounding box approach for demonstration
-        const lngs = coordinates.map(c => c[0]);
-        const lats = coordinates.map(c => c[1]);
+        const lngs = coordinates.map((c) => c[0]);
+        const lats = coordinates.map((c) => c[1]);
         const minLng = Math.min(...lngs) - 5;
         const maxLng = Math.max(...lngs) + 5;
         const minLat = Math.min(...lats) - 5;
@@ -110,7 +120,7 @@ const MapboxGlobe = () => {
           [maxLng, minLat],
           [maxLng, maxLat],
           [minLng, maxLat],
-          [minLng, minLat]
+          [minLng, minLat],
         ];
 
         const sourceId = `${provider.toLowerCase()}-regions`;
@@ -118,68 +128,77 @@ const MapboxGlobe = () => {
 
         // Add source
         map.current!.addSource(sourceId, {
-          type: 'geojson',
+          type: "geojson",
           data: {
-            type: 'Feature',
+            type: "Feature",
             properties: { provider },
             geometry: {
-              type: 'Polygon',
-              coordinates: [boundaryPolygon]
-            }
-          }
+              type: "Polygon",
+              coordinates: [boundaryPolygon],
+            },
+          },
         });
 
         // Add boundary layer
         const colors = {
-          AWS: '#FF9500',
-          GCP: '#4285F4',
-          Azure: '#00D4FF'
+          AWS: "#FF9500",
+          GCP: "#4285F4",
+          Azure: "#00D4FF",
         };
 
         map.current!.addLayer({
           id: layerId,
-          type: 'line',
+          type: "line",
           source: sourceId,
           paint: {
-            'line-color': colors[provider as keyof typeof colors],
-            'line-width': 2,
-            'line-opacity': 0.6,
-            'line-dasharray': [2, 2]
-          }
+            "line-color": colors[provider as keyof typeof colors],
+            "line-width": 2,
+            "line-opacity": 0.6,
+            "line-dasharray": [2, 2],
+          },
         });
 
         // Add fill layer for subtle background
-        map.current!.addLayer({
-          id: `${layerId}-fill`,
-          type: 'fill',
-          source: sourceId,
-          paint: {
-            'fill-color': colors[provider as keyof typeof colors],
-            'fill-opacity': 0.1
-          }
-        }, layerId);
+        map.current!.addLayer(
+          {
+            id: `${layerId}-fill`,
+            type: "fill",
+            source: sourceId,
+            paint: {
+              "fill-color": colors[provider as keyof typeof colors],
+              "fill-opacity": 0.1,
+            },
+          },
+          layerId
+        );
       });
     };
 
     if (map.current.isStyleLoaded()) {
       addCloudRegionBoundaries();
     } else {
-      map.current.once('style.load', addCloudRegionBoundaries);
+      map.current.once("style.load", addCloudRegionBoundaries);
     }
 
     return () => {
       if (map.current) {
-        const allLayers = ['aws-boundaries', 'gcp-boundaries', 'azure-boundaries', 
-                          'aws-boundaries-fill', 'gcp-boundaries-fill', 'azure-boundaries-fill'];
-        const allSources = ['aws-regions', 'gcp-regions', 'azure-regions'];
-        
-        allLayers.forEach(layer => {
+        const allLayers = [
+          "aws-boundaries",
+          "gcp-boundaries",
+          "azure-boundaries",
+          "aws-boundaries-fill",
+          "gcp-boundaries-fill",
+          "azure-boundaries-fill",
+        ];
+        const allSources = ["aws-regions", "gcp-regions", "azure-regions"];
+
+        allLayers.forEach((layer) => {
           if (map.current!.getLayer(layer)) {
             map.current!.removeLayer(layer);
           }
         });
-        
-        allSources.forEach(source => {
+
+        allSources.forEach((source) => {
           if (map.current!.getSource(source)) {
             map.current!.removeSource(source);
           }
@@ -192,11 +211,11 @@ const MapboxGlobe = () => {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    console.log("Initializing/Reinitializing map, isDark:", isDark);
+    // console.log("Initializing/Reinitializing map, isDark:", isDark);
 
     // Clean up existing map
     if (map.current) {
-      console.log("Removing existing map instance");
+      // console.log("Removing existing map instance");
       map.current.remove();
       map.current = null;
     }
@@ -217,10 +236,10 @@ const MapboxGlobe = () => {
     map.current.on("style.load", () => {
       if (!map.current) return;
 
-      console.log(
-        "Map style loaded, applying fog settings for isDark:",
-        isDark
-      );
+      // console.log(
+      //   "Map style loaded, applying fog settings for isDark:",
+      //   isDark
+      // );
 
       map.current.setFog({
         color: isDark ? "rgb(100, 120, 150)" : "rgb(200, 220, 240)",
@@ -267,7 +286,7 @@ const MapboxGlobe = () => {
     });
 
     return () => {
-      console.log("Cleaning up map instance");
+      // console.log("Cleaning up map instance");
       clearInterval(spinInterval);
       if (map.current) {
         map.current.remove();
@@ -280,7 +299,7 @@ const MapboxGlobe = () => {
   useEffect(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
 
-    console.log("Exchange markers useEffect triggered");
+    // console.log("Exchange markers useEffect triggered");
 
     Object.values(markersRef.current).forEach((marker) => {
       if (marker.getElement().classList.contains("exchange-marker")) {
@@ -370,7 +389,7 @@ const MapboxGlobe = () => {
   useEffect(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
 
-    console.log("Cloud markers useEffect triggered");
+    // console.log("Cloud markers useEffect triggered");
 
     Object.values(markersRef.current).forEach((marker) => {
       if (marker.getElement().classList.contains("cloud-marker")) {
@@ -455,12 +474,12 @@ const MapboxGlobe = () => {
   useEffect(() => {
     if (!map.current || !realTimeEnabled) return;
 
-    console.log("Latency useEffect triggered, dependencies:", {
-      latencyData: JSON.stringify(latencyData, null, 2),
-      memoizedFilters: JSON.stringify(memoizedFilters, null, 2),
-      realTimeEnabled,
-      isDark,
-    });
+    // console.log("Latency useEffect triggered, dependencies:", {
+    //   latencyData: JSON.stringify(latencyData, null, 2),
+    //   memoizedFilters: JSON.stringify(memoizedFilters, null, 2),
+    //   realTimeEnabled,
+    //   isDark,
+    // });
 
     const addLatencyLayers = () => {
       if (!map.current || !map.current.isStyleLoaded()) {
@@ -468,7 +487,7 @@ const MapboxGlobe = () => {
         return;
       }
 
-      // Remove existing connection layers and source if they exist
+      // Removing the existing connection layers and source if they exist
       const layers = ["latency-connections", "latency-connections-glow"];
       layers.forEach((layer) => {
         if (map.current!.getLayer(layer)) {
@@ -498,16 +517,16 @@ const MapboxGlobe = () => {
           data.latency >= memoizedFilters.latencyRange[0] &&
           data.latency <= memoizedFilters.latencyRange[1];
 
-        console.log(
-          `Filtering data: exchangeId=${data.exchangeId}, cloudRegionId=${data.cloudRegionId}, latency=${data.latency}, passesFilter=${passesFilter}`
-        );
+        // console.log(
+        //   `Filtering data: exchangeId=${data.exchangeId}, cloudRegionId=${data.cloudRegionId}, latency=${data.latency}, passesFilter=${passesFilter}`
+        // );
         return passesFilter;
       });
 
-      console.log(
-        "Filtered Latency Data:",
-        JSON.stringify(filteredLatencyData, null, 2)
-      );
+      // console.log(
+      //   "Filtered Latency Data:",
+      //   JSON.stringify(filteredLatencyData, null, 2)
+      // );
 
       // Create GeoJSON for connections
       const connectionFeatures: Feature<Geometry, ConnectionProperties>[] =
@@ -549,9 +568,9 @@ const MapboxGlobe = () => {
               },
             } as Feature<Geometry, ConnectionProperties>;
 
-            console.log(
-              `Created feature: exchange=${feature.properties.exchangeName}, region=${feature.properties.regionName}, latency=${feature.properties.latency}, packetLoss=${feature.properties.packetLoss}`
-            );
+            // console.log(
+            //   `Created feature: exchange=${feature.properties.exchangeName}, region=${feature.properties.regionName}, latency=${feature.properties.latency}, packetLoss=${feature.properties.packetLoss}`
+            // );
             return feature;
           })
           .filter(
@@ -559,10 +578,10 @@ const MapboxGlobe = () => {
               feature !== null
           );
 
-      console.log(
-        "Connection Features:",
-        JSON.stringify(connectionFeatures, null, 2)
-      );
+      // console.log(
+      //   "Connection Features:",
+      //   JSON.stringify(connectionFeatures, null, 2)
+      // );
 
       if (connectionFeatures.length > 0) {
         // Add connection source
@@ -630,7 +649,7 @@ const MapboxGlobe = () => {
         animationFrameId.current = requestAnimationFrame(animateLines);
       }
 
-      // Add hover interaction for Tooltip
+      // This is hover interaction for Tooltip
       map.current.on("mouseenter", "latency-connections", (e) => {
         if (!map.current || !e.features || !e.features[0]) {
           console.warn(
@@ -643,9 +662,9 @@ const MapboxGlobe = () => {
         const feature = e.features[0];
         const properties = feature.properties as ConnectionProperties;
 
-        console.log(
-          `Mouseenter event: exchange=${properties.exchangeName}, region=${properties.regionName}, latency=${properties.latency}, packetLoss=${properties.packetLoss}`
-        );
+        // console.log(
+        //   `Mouseenter event: exchange=${properties.exchangeName}, region=${properties.regionName}, latency=${properties.latency}, packetLoss=${properties.packetLoss}`
+        // );
 
         if (!properties || !properties.exchangeName || !properties.regionName) {
           console.warn(
@@ -688,7 +707,7 @@ const MapboxGlobe = () => {
       map.current.on("mouseleave", "latency-connections", () => {
         if (!map.current) return;
 
-        console.log("Mouseleave event triggered");
+        // console.log("Mouseleave event triggered");
 
         map.current.getCanvas().style.cursor = "";
         setTooltipData(null);
@@ -724,21 +743,10 @@ const MapboxGlobe = () => {
   useEffect(() => {
     if (!map.current) return;
 
-    console.log("Heatmap useEffect triggered, dependencies:", {
-      showHeatmap,
-      latencyData,
-    });
-
     const addHeatmapLayer = () => {
       if (!map.current || !map.current.isStyleLoaded()) {
-        console.warn("Style not loaded, deferring addHeatmapLayer");
         return;
       }
-
-      console.log(
-        "Adding heatmap layer, isStyleLoaded:",
-        map.current.isStyleLoaded()
-      );
 
       if (map.current.getLayer("latency-heatmap")) {
         map.current.removeLayer("latency-heatmap");
@@ -747,7 +755,7 @@ const MapboxGlobe = () => {
         map.current.removeSource("latency-heatmap");
       }
 
-      if (showHeatmap) {
+      if (memoizedShowHeatmap && latencyData.length > 0) {
         const heatmapPoints: Feature<Geometry, HeatmapProperties>[] =
           latencyData
             .map((data) => {
@@ -778,6 +786,8 @@ const MapboxGlobe = () => {
             );
 
         if (heatmapPoints.length > 0) {
+          // console.log("Creating heatmap with", heatmapPoints.length, "points");
+
           map.current.addSource("latency-heatmap", {
             type: "geojson",
             data: {
@@ -827,7 +837,11 @@ const MapboxGlobe = () => {
               "heatmap-opacity": 0.8,
             },
           });
+        } else {
+          console.warn("No heatmap points to display");
         }
+      } else {
+        toast.error("Heatmap disabled or no data available");
       }
     };
 
@@ -848,7 +862,7 @@ const MapboxGlobe = () => {
         }
       }
     };
-  }, [isDark, showHeatmap, latencyData]);
+  }, [isDark, memoizedShowHeatmap]);
 
   return (
     <>
@@ -929,3 +943,4 @@ const MapboxGlobe = () => {
 };
 
 export default MapboxGlobe;
+//Completed
