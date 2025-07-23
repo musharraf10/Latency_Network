@@ -252,7 +252,7 @@ export const generateHistoricalData = (
   const now = Date.now();
   const interval = (hours * 60 * 60 * 1000) / 100; // 100 data points
 
-  // Use specific exchange and cloud region if provided, else use first pair
+  // Using specific exchange and cloud region if provided, else it uses first pair
   const exchange = exchanges.find((e) => e.id === exchangeId) || exchanges[0];
   const region =
     cloudRegions.find((r) => r.id === cloudRegionId) || cloudRegions[0];
