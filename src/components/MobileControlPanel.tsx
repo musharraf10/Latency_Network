@@ -102,7 +102,7 @@ const MobileControlPanel = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setIsOpen(false)}
           />
         )}
@@ -110,7 +110,7 @@ const MobileControlPanel = () => {
 
       {/* Control Panel */}
       <motion.div
-        className={`fixed bottom-0 left-0 right-0 z-50 md:hidden rounded-t-3xl border-t transition-colors ${
+        className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden rounded-t-3xl border-t transition-colors ${
           isDark
             ? "bg-slate-900/95 border-slate-700/50"
             : "bg-white/95 border-slate-300/50"

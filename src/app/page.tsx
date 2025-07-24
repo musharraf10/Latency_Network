@@ -61,7 +61,7 @@ export default function Home() {
       <MobileControlPanel />
 
       {/* Control Panel  for  large screens*/}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <ControlPanel />
       </div>
 
