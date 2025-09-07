@@ -138,7 +138,7 @@ git clone https://github.com/musharraf10/Latency_Network.git
 2. Install dependencies:
 
 ```bash
-npm install #if any error try legacy modules
+npm install #if any error try legacy modules for safe installation
 ```
 
 ```env
