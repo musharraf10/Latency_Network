@@ -9,7 +9,7 @@ Application that displays a 3D world map visualizing exchange server locations a
 ### 3D World Map Visualization
 
 - **Interactive 3D Globe**: Powered by Mapbox GL JS with globe projection
-- **Real-time Rotation**: Auto-rotating globe with pause on user interaction
+- **Real-time Rotation**: Auto-rotating(2s) globe with pause on user interaction
 - **Smooth Controls**: Zoom, pan, and rotate with optimized performance
 - **Professional Styling**: Enhanced fog effects and atmospheric rendering
 
